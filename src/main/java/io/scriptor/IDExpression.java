@@ -15,6 +15,6 @@ public class IDExpression extends Expression {
 
     @Override
     public Value evaluate(final Env env) {
-        return env.getVariable(name);
+        return env.getVariable(name).value;
     }
 }

@@ -1,16 +1,16 @@
 # fibonacci #
 def fib(n) = (
-    a1 = 0
-    a2 = 1
+    def a1 = 0
+    def a2 = 1
     [0, n] (
-        b = a1 + a2
+        def b = a1 + a2
         a1 = a2
         a2 = b
     )
     a2
 )
 
-N = 10
+def N = 10
 
 # entry point #
 def main() = fib(N)

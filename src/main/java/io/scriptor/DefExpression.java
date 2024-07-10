@@ -15,13 +15,18 @@ public class DefExpression extends Expression {
     @Override
     public String toString() {
         final var builder = new StringBuilder();
-        builder.append("def ").append(name).append('(');
-        for (int i = 0; i < args.length; ++i) {
-            if (i > 0)
-                builder.append(", ");
-            builder.append(args[i]);
+        builder.append("def ").append(name);
+
+        if (args != null) {
+            builder.append('(');
+            for (int i = 0; i < args.length; ++i) {
+                if (i > 0)
+                    builder.append(", ");
+                builder.append(args[i]);
+            }
+            builder.append(')');
         }
-        builder.append(") = ").append(expression);
+        builder.append(" = ").append(expression);
         return builder.toString();
     }
 
