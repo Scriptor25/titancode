@@ -10,7 +10,7 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": "src/main/resources/fib.ttc"
+            "args": "src/main/resources/ghost.ttc"
         }
     ]
 }

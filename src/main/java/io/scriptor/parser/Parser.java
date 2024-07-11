@@ -16,11 +16,13 @@ import io.scriptor.ast.DefExpression;
 import io.scriptor.ast.Expression;
 import io.scriptor.ast.GroupExpression;
 import io.scriptor.ast.IDExpression;
+import io.scriptor.ast.IfExpression;
 import io.scriptor.ast.NativeExpression;
 import io.scriptor.ast.NumberExpression;
 import io.scriptor.ast.RangeExpression;
 import io.scriptor.ast.StringExpression;
 import io.scriptor.ast.VarargsExpression;
+import io.scriptor.ast.WhileExpression;
 
 public class Parser implements AutoCloseable, Iterable<Expression> {
 
@@ -325,16 +327,10 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     }
 
     public Expression parse() throws IOException {
-        if (at(TokenType.PAREN_OPEN))
-            return parseGroup();
-        if (at(TokenType.BRACKET_OPEN))
-            return parseRange();
         if (at("def"))
             return parseDef();
-        if (at("native"))
-            return new NativeExpression((CallExpression) parseCall());
 
-        return parseBinary(parseCall(), 0);
+        return parseBinary();
     }
 
     public GroupExpression parseGroup() throws IOException {
@@ -413,6 +409,51 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return new DefExpression(name, args, varargs, expression);
     }
 
+    public NativeExpression parseNative() throws IOException {
+        // native("<name>", <args>...)
+
+        expect("native");
+        expect(TokenType.PAREN_OPEN);
+        final var name = expect(TokenType.STRING);
+        expect(TokenType.PAREN_CLOSE);
+    }
+
+    public WhileExpression parseWhile() throws IOException {
+        // while <condition> <expression>
+
+        expect("while");
+        expect(TokenType.BRACKET_OPEN);
+        final var condition = parse();
+        expect(TokenType.BRACKET_CLOSE);
+        final var expression = parse();
+
+        return new WhileExpression(condition, expression);
+    }
+
+    public IfExpression parseIf() throws IOException {
+        // if <condition> <expression> else <expression>
+
+        expect("if");
+        expect(TokenType.BRACKET_OPEN);
+        final var condition = parse();
+        expect(TokenType.BRACKET_CLOSE);
+        final var branchTrue = parse();
+
+        final Expression branchFalse;
+        if (at("else")) {
+            next();
+            branchFalse = parse();
+        } else {
+            branchFalse = null;
+        }
+
+        return new IfExpression(condition, branchTrue, branchFalse);
+    }
+
+    public Expression parseBinary() throws IOException {
+        return parseBinary(parseCall(), 0);
+    }
+
     public Expression parseBinary(Expression lhs, int minPrecedence) throws IOException {
         while (at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) >= minPrecedence) {
             final var op = skip().value();
@@ -445,6 +486,15 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
     public Expression parsePrimary() throws IOException {
 
+        if (at("native"))
+            return parseNative();
+
+        if (at("while"))
+            return parseWhile();
+
+        if (at("if"))
+            return parseIf();
+
         if (at(TokenType.ID)) {
             final var name = skip().value();
             return new IDExpression(name);
@@ -460,12 +510,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return new StringExpression(value);
         }
 
-        if (at(TokenType.PAREN_OPEN)) {
-            next();
-            final var value = parse();
-            expect(TokenType.PAREN_CLOSE);
-            return value;
-        }
+        if (at(TokenType.PAREN_OPEN))
+            return parseGroup();
+
+        if (at(TokenType.BRACKET_OPEN))
+            return parseRange();
 
         if (at(TokenType.QUEST)) {
             next();

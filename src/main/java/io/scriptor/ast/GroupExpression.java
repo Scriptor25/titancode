@@ -24,8 +24,9 @@ public class GroupExpression extends Expression {
     @Override
     public IValue evaluate(final Env env) {
         IValue result = null;
+        final var env1 = new Env(env);
         for (final var expression : expressions) {
-            result = expression.evaluate(env);
+            result = expression.evaluate(env1);
         }
         return result;
     }

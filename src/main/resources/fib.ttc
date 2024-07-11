@@ -9,7 +9,6 @@ def fib(n) = (
         a2 = a1
         a1 = b
     )
-    a1
 )
 
 def N = 10
