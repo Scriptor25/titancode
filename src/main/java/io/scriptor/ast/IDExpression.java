@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.Value;
+import io.scriptor.runtime.IValue;
 
 public class IDExpression extends Expression {
 
@@ -17,7 +17,7 @@ public class IDExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public IValue evaluate(final Env env) {
         return env.getVariable(name).value;
     }
 }

@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.Value;
+import io.scriptor.runtime.IValue;
 
 public class BinaryExpression extends Expression {
 
@@ -21,7 +21,7 @@ public class BinaryExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public IValue evaluate(final Env env) {
         if (operator.equals("=")) {
             final var name = ((IDExpression) lhs).name;
             final var value = rhs.evaluate(env);

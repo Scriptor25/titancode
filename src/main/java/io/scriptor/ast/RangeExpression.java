@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.Value;
+import io.scriptor.runtime.IValue;
 
 public class RangeExpression extends Expression {
 
@@ -25,13 +25,13 @@ public class RangeExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public IValue evaluate(final Env env) {
         final var efrom = from.evaluate(env);
         final var eto = to.evaluate(env);
         for (double i = (Double) efrom.getValue(); i < (Double) eto.getValue(); ++i) {
             final var env1 = new Env(env);
             if (id != null)
-                env1.defineVariable(id, Value.fromJava(i));
+                env1.defineVariable(id, IValue.fromJava(i));
             expression.evaluate(env1);
         }
         return null;

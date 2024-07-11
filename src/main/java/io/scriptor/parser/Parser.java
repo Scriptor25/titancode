@@ -16,8 +16,11 @@ import io.scriptor.ast.DefExpression;
 import io.scriptor.ast.Expression;
 import io.scriptor.ast.GroupExpression;
 import io.scriptor.ast.IDExpression;
+import io.scriptor.ast.NativeExpression;
 import io.scriptor.ast.NumberExpression;
 import io.scriptor.ast.RangeExpression;
+import io.scriptor.ast.StringExpression;
+import io.scriptor.ast.VarargsExpression;
 
 public class Parser implements AutoCloseable, Iterable<Expression> {
 
@@ -143,6 +146,10 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                             mode = ParserMode.COMMENT;
                             break;
 
+                        case '"':
+                            mode = ParserMode.STRING;
+                            break;
+
                         case '(':
                             value += (char) chr;
                             chr = get();
@@ -193,6 +200,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                             chr = get();
                             return token = new Token(TokenType.COLON, value);
 
+                        case '?':
+                            value += (char) chr;
+                            chr = get();
+                            return token = new Token(TokenType.QUEST, value);
+
                         default:
                             if (chr <= 0x20)
                                 break;
@@ -222,6 +234,25 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                 case COMMENT:
                     if (chr == '#')
                         mode = ParserMode.NORMAL;
+                    break;
+
+                case STRING:
+                    if (chr == '"') {
+                        chr = get();
+                        return token = new Token(TokenType.STRING, value);
+                    }
+                    if (chr == '\\') {
+                        chr = get();
+                        chr = switch (chr) {
+                            case 'b' -> '\b';
+                            case 'f' -> '\f';
+                            case 'n' -> '\n';
+                            case 'r' -> '\r';
+                            case 't' -> '\t';
+                            default -> chr;
+                        };
+                    }
+                    value += (char) chr;
                     break;
 
                 case NUMBER:
@@ -296,6 +327,8 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return parseRange();
         if (at("def"))
             return parseDef();
+        if (at("native"))
+            return new NativeExpression((CallExpression) parseCall());
 
         return parseBinary(parseCall(), 0);
     }
@@ -343,20 +376,25 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         final var name = expect(TokenType.ID).value();
 
         final String[] args;
+        boolean varargs = false;
         if (at(TokenType.PAREN_OPEN)) {
             next();
 
             final List<String> arglist = new Vector<>();
             while (!at(TokenType.PAREN_CLOSE)) {
+                if (at(TokenType.QUEST)) {
+                    next();
+                    varargs = true;
+                    break;
+                }
                 arglist.add(expect(TokenType.ID).value());
                 if (!at(TokenType.PAREN_CLOSE))
                     expect(TokenType.COMMA);
             }
-            next();
-        
+            expect(TokenType.PAREN_CLOSE);
+
             args = arglist.toArray(String[]::new);
-        }
-        else {
+        } else {
             args = null;
         }
 
@@ -368,7 +406,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             expression = null;
         }
 
-        return new DefExpression(name, args, expression);
+        return new DefExpression(name, args, varargs, expression);
     }
 
     public Expression parseBinary(Expression lhs, int minPrecedence) throws IOException {
@@ -413,11 +451,29 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return new NumberExpression(value);
         }
 
+        if (at(TokenType.STRING)) {
+            final var value = skip().value();
+            return new StringExpression(value);
+        }
+
         if (at(TokenType.PAREN_OPEN)) {
             next();
             final var value = parse();
             expect(TokenType.PAREN_CLOSE);
             return value;
+        }
+
+        if (at(TokenType.QUEST)) {
+            next();
+            final Expression index;
+            if (at(TokenType.BRACE_OPEN)) {
+                next();
+                index = parse();
+                expect(TokenType.BRACE_CLOSE);
+            } else {
+                index = null;
+            }
+            return new VarargsExpression(index);
         }
 
         throw new IllegalStateException();

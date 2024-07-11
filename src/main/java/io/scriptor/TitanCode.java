@@ -16,7 +16,11 @@ public class TitanCode {
         }
         parser.close();
 
-        final double result = env.call("main");
+        final double result = env.call("main", 3, "Hello", "World", "!");
         System.out.printf("Exit Code %f%n", result);
+    }
+
+    public static void printf(final String format, final Object... args) {
+        System.out.printf(format, args);
     }
 }

@@ -5,5 +5,6 @@ public enum ParserMode {
     COMMENT,
     NUMBER,
     ID,
-    BINARY_OPERATOR
+    BINARY_OPERATOR,
+    STRING,
 }

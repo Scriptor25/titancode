@@ -9,6 +9,8 @@ public class Type {
 
     static {
         new Type("number");
+        new Type("string");
+        new Type("array");
     }
 
     public static Type get(final String name) {
@@ -19,6 +21,14 @@ public class Type {
 
     public static Type getNumber() {
         return get("number");
+    }
+
+    public static Type getString() {
+        return get("string");
+    }
+
+    public static Type getArray() {
+        return get("array");
     }
 
     public final String name;

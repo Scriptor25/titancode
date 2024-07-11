@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.Value;
+import io.scriptor.runtime.IValue;
 
 public class CallExpression extends Expression {
 
@@ -27,9 +27,9 @@ public class CallExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public IValue evaluate(final Env env) {
         final var name = ((IDExpression) callee).name;
-        final var eargs = new Value[args.length];
+        final var eargs = new IValue[args.length];
         for (int i = 0; i < args.length; ++i)
             eargs[i] = args[i].evaluate(env);
         return env.call(name, eargs);

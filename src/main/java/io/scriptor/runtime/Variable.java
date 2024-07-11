@@ -3,9 +3,9 @@ package io.scriptor.runtime;
 public class Variable {
 
     public final String name;
-    public Value value;
+    public IValue value;
 
-    public Variable(final String name, final Value value) {
+    public Variable(final String name, final IValue value) {
         this.name = name;
         this.value = value;
     }

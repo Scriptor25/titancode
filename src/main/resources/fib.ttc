@@ -1,3 +1,5 @@
+def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
+
 # fibonacci #
 def fib(n) = (
     def a1 = 1
@@ -13,4 +15,10 @@ def fib(n) = (
 def N = 10
 
 # entry point #
-def main() = fib(N)
+def main(count, ?) = (
+    [0, count]{i} printf("%5.0f | %s\n", i, ?{i})
+
+    def fibN = fib(N)
+    printf("fib(%.0f) = %.0f\n", N, fibN)
+    0
+)

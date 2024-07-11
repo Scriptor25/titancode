@@ -14,5 +14,7 @@ public enum TokenType {
     DOT,
     COMMA,
     SEMICOLON,
-    COLON
+    COLON,
+    STRING,
+    QUEST
 }
