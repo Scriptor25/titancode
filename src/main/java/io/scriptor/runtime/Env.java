@@ -52,11 +52,11 @@ public class Env {
     public IOperator getOperator(final String operator, final Type lhs, final Type rhs) {
         if (lhs == Type.getNumber() && rhs == Type.getNumber()) {
             return switch (operator) {
-                case "+" -> (l, r) -> new NumberValue((Double) l.getValue() + (Double) r.getValue());
-                case "-" -> (l, r) -> new NumberValue((Double) l.getValue() - (Double) r.getValue());
-                case "*" -> (l, r) -> new NumberValue((Double) l.getValue() * (Double) r.getValue());
-                case "/" -> (l, r) -> new NumberValue((Double) l.getValue() / (Double) r.getValue());
-                case "%" -> (l, r) -> new NumberValue((Double) l.getValue() % (Double) r.getValue());
+                case "+" -> (l, r) -> new NumberValue(l.getDouble() + r.getDouble());
+                case "-" -> (l, r) -> new NumberValue(l.getDouble() - r.getDouble());
+                case "*" -> (l, r) -> new NumberValue(l.getDouble() * r.getDouble());
+                case "/" -> (l, r) -> new NumberValue(l.getDouble() / r.getDouble());
+                case "%" -> (l, r) -> new NumberValue(l.getDouble() % r.getDouble());
 
                 default -> throw new IllegalStateException();
             };
@@ -106,7 +106,7 @@ public class Env {
             throw new IllegalStateException("no varargs in this environment");
         }
 
-        final var idx = (int) (double) (Double) index.getValue();
+        final var idx = index.getInt();
         return varargs[idx];
     }
 

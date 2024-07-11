@@ -26,9 +26,9 @@ public class RangeExpression extends Expression {
 
     @Override
     public IValue evaluate(final Env env) {
-        final var efrom = from.evaluate(env);
-        final var eto = to.evaluate(env);
-        for (double i = (Double) efrom.getValue(); i < (Double) eto.getValue(); ++i) {
+        final var efrom = from.evaluate(env).getDouble();
+        final var eto = to.evaluate(env).getDouble();
+        for (double i = efrom; i < eto; ++i) {
             final var env1 = new Env(env);
             if (id != null)
                 env1.defineVariable(id, IValue.fromJava(i));

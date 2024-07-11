@@ -9,7 +9,7 @@ public class NumberValue implements IValue {
     }
 
     @Override
-    public Object getValue() {
+    public Double getValue() {
         return value;
     }
 
