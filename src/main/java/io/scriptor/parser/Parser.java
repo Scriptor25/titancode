@@ -256,6 +256,10 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                     break;
 
                 case NUMBER:
+                    if (chr == '.') {
+                        value += (char) chr;
+                        break;
+                    }
                     if (!isDigit(chr))
                         return token = new Token(TokenType.NUMBER, value);
                     value += (char) chr;
