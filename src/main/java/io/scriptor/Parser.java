@@ -332,17 +332,24 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
         expect("def");
         final var name = expect(TokenType.ID).value();
-        expect(TokenType.PAREN_OPEN);
 
-        final List<String> arglist = new Vector<>();
-        while (!at(TokenType.PAREN_CLOSE)) {
-            arglist.add(expect(TokenType.ID).value());
-            if (!at(TokenType.PAREN_CLOSE))
-                expect(TokenType.COMMA);
+        final String[] args;
+        if (at(TokenType.PAREN_OPEN)) {
+            next();
+
+            final List<String> arglist = new Vector<>();
+            while (!at(TokenType.PAREN_CLOSE)) {
+                arglist.add(expect(TokenType.ID).value());
+                if (!at(TokenType.PAREN_CLOSE))
+                    expect(TokenType.COMMA);
+            }
+            next();
+        
+            args = arglist.toArray(String[]::new);
         }
-        next();
-
-        final var args = arglist.toArray(String[]::new);
+        else {
+            args = null;
+        }
 
         final Expression expression;
         if (at("=")) {

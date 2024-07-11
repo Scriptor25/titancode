@@ -13,5 +13,8 @@ public class TitanCode {
             System.out.println(expression.evaluate(env));
         }
         parser.close();
+
+        final double result = env.call("main");
+        System.out.printf("Exit Code %f%n", result);
     }
 }

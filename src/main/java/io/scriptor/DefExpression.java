@@ -32,7 +32,10 @@ public class DefExpression extends Expression {
 
     @Override
     public Value evaluate(final Env env) {
-        env.defineFunction(name, args, expression);
+        if (args != null)
+            env.defineFunction(name, args, expression);
+        else
+            env.defineVariable(name, expression.evaluate(env));
         return null;
     }
 }

@@ -19,9 +19,16 @@ public class BinaryExpression extends Expression {
 
     @Override
     public Value evaluate(final Env env) {
+        if (operator.equals("=")) {
+            final var name = ((IDExpression) lhs).name;
+            final var value = rhs.evaluate(env);
+            final var variable = env.setVariable(name, value);
+            return variable.value;
+        }
+
         final var left = lhs.evaluate(env);
         final var right = rhs.evaluate(env);
-        final var op = env.getOperator(operator, left.type, right.type);
+        final var op = env.getOperator(operator, left.getType(), right.getType());
         return op.evaluate(left, right);
     }
 }

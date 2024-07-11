@@ -1,13 +1,13 @@
 # fibonacci #
 def fib(n) = (
-    def a1 = 0
-    def a2 = 1
-    [0, n] (
+    def a1 = 1
+    def a2 = 0
+    [0, n - 1] (
         def b = a1 + a2
-        a1 = a2
-        a2 = b
+        a2 = a1
+        a1 = b
     )
-    a2
+    a1
 )
 
 def N = 10

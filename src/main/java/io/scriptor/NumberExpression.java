@@ -15,6 +15,6 @@ public class NumberExpression extends Expression {
 
     @Override
     public Value evaluate(final Env env) {
-        throw new UnsupportedOperationException();
+        return new NumberValue(value);
     }
 }

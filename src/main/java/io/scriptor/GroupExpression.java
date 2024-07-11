@@ -20,6 +20,10 @@ public class GroupExpression extends Expression {
 
     @Override
     public Value evaluate(final Env env) {
-        throw new UnsupportedOperationException();
+        Value result = null;
+        for (final var expression : expressions) {
+            result = expression.evaluate(env);
+        }
+        return result;
     }
 }

@@ -23,6 +23,14 @@ public class RangeExpression extends Expression {
 
     @Override
     public Value evaluate(final Env env) {
-        throw new UnsupportedOperationException();
+        final var efrom = from.evaluate(env);
+        final var eto = to.evaluate(env);
+        for (double i = (Double) efrom.getValue(); i < (Double) eto.getValue(); ++i) {
+            final var env1 = new Env(env);
+            if (id != null)
+                env1.defineVariable(id, Value.fromJava(i));
+            expression.evaluate(env1);
+        }
+        return null;
     }
 }
