@@ -1,4 +1,4 @@
-package io.scriptor;
+package io.scriptor.parser;
 
 public enum TokenType {
 

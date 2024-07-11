@@ -2,6 +2,9 @@ package io.scriptor;
 
 import java.io.IOException;
 
+import io.scriptor.parser.Parser;
+import io.scriptor.runtime.Env;
+
 public class TitanCode {
 
     public static void main(String[] args) throws IOException {
@@ -9,8 +12,7 @@ public class TitanCode {
         final var parser = new Parser(filename);
         final var env = new Env();
         for (final var expression : parser) {
-            System.out.println(expression);
-            System.out.println(expression.evaluate(env));
+            expression.evaluate(env);
         }
         parser.close();
 

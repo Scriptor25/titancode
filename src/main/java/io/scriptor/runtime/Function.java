@@ -1,4 +1,6 @@
-package io.scriptor;
+package io.scriptor.runtime;
+
+import io.scriptor.ast.Expression;
 
 public class Function {
 

@@ -1,4 +1,4 @@
-package io.scriptor;
+package io.scriptor.parser;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,6 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
+
+import io.scriptor.ast.BinaryExpression;
+import io.scriptor.ast.CallExpression;
+import io.scriptor.ast.DefExpression;
+import io.scriptor.ast.Expression;
+import io.scriptor.ast.GroupExpression;
+import io.scriptor.ast.IDExpression;
+import io.scriptor.ast.NumberExpression;
+import io.scriptor.ast.RangeExpression;
 
 public class Parser implements AutoCloseable, Iterable<Expression> {
 

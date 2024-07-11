@@ -1,4 +1,4 @@
-package io.scriptor;
+package io.scriptor.runtime;
 
 @FunctionalInterface
 public interface IOperator {

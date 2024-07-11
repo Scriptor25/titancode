@@ -1,4 +1,8 @@
-package io.scriptor;
+package io.scriptor.ast;
+
+import io.scriptor.runtime.Env;
+import io.scriptor.runtime.NumberValue;
+import io.scriptor.runtime.Value;
 
 public class NumberExpression extends Expression {
 

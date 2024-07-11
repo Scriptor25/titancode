@@ -1,4 +1,4 @@
-package io.scriptor;
+package io.scriptor.runtime;
 
 public interface Value {
 

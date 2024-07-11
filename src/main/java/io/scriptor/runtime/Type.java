@@ -1,4 +1,4 @@
-package io.scriptor;
+package io.scriptor.runtime;
 
 import java.util.HashMap;
 import java.util.Map;
