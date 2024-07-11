@@ -2,7 +2,7 @@
 
 ## About
 
-TitanCode (the wip title) is a simple programming language run by an interpreter based on Java. It has a highly functional character, e.g. in contrast to the fully object oriented Java language
+TitanCode (the wip title) is a simple programming language run by an interpreter based on Java. It has a highly functional character, e.g. in contrast to the fully object oriented Java language.
 
 ## Features
 
