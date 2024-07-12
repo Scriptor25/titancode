@@ -5,6 +5,8 @@ public class ArrayValue implements IValue {
     private final IValue[] values;
 
     public ArrayValue(final IValue... values) {
+        assert values != null;
+
         this.values = values;
     }
 
@@ -14,6 +16,11 @@ public class ArrayValue implements IValue {
         for (int i = 0; i < objects.length; ++i)
             objects[i] = values[i].getValue();
         return objects;
+    }
+
+    @Override
+    public boolean getBoolean() {
+        return values.length > 0;
     }
 
     @Override

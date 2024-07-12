@@ -3,8 +3,7 @@ package io.scriptor.runtime;
 public interface IValue {
 
     public static IValue fromJava(final Object value) {
-        if (value == null)
-            throw new NullPointerException();
+        assert value != null;
 
         if (value instanceof Void)
             return null;
@@ -19,6 +18,8 @@ public interface IValue {
     }
 
     public Object getValue();
+
+    public boolean getBoolean();
 
     public default byte getByte() {
         return (byte) (double) (Double) getValue();

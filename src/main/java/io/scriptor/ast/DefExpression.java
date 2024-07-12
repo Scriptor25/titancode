@@ -11,6 +11,9 @@ public class DefExpression extends Expression {
     public final Expression expression;
 
     public DefExpression(final String name, final String[] args, final boolean varargs, final Expression expression) {
+        assert name != null;
+        assert expression != null;
+
         this.name = name;
         this.args = args;
         this.varargs = varargs;
@@ -37,6 +40,8 @@ public class DefExpression extends Expression {
 
     @Override
     public IValue evaluate(final Env env) {
+        assert env != null;
+
         if (args != null)
             env.defineFunction(name, args, varargs, expression);
         else

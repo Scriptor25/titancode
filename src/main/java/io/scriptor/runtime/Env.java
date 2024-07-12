@@ -19,6 +19,8 @@ public class Env {
     }
 
     public Env(final Env parent) {
+        assert parent != null;
+
         this.parent = parent;
         this.global = parent.global;
     }
@@ -36,74 +38,135 @@ public class Env {
     }
 
     public void defineFunction(
-            final String name, final String[] args, final boolean varargs,
+            final String name,
+            final String[] args,
+            final boolean varargs,
             final Expression expression) {
         functions.put(name, new Function(name, args, varargs, expression));
     }
 
     public Function getFunction(final String name) {
+        assert name != null;
+
         if (functions.containsKey(name))
             return functions.get(name);
-        if (hasParent())
-            return parent.getFunction(name);
-        throw new IllegalStateException(String.format("undefined function '%s'", name));
+
+        assert hasParent();
+        return parent.getFunction(name);
     }
 
-    public IOperator getOperator(final String operator, final Type lhs, final Type rhs) {
-        if (lhs == Type.getNumber() && rhs == Type.getNumber()) {
-            return switch (operator) {
-                case "+" -> (l, r) -> new NumberValue(l.getDouble() + r.getDouble());
-                case "-" -> (l, r) -> new NumberValue(l.getDouble() - r.getDouble());
-                case "*" -> (l, r) -> new NumberValue(l.getDouble() * r.getDouble());
-                case "/" -> (l, r) -> new NumberValue(l.getDouble() / r.getDouble());
-                case "%" -> (l, r) -> new NumberValue(l.getDouble() % r.getDouble());
+    public RBinaryOperator getBinaryOperator(final String operator, final Type lhs, final Type rhs) {
+        assert operator != null;
+        assert lhs != null;
+        assert rhs != null;
 
-                default -> throw new IllegalStateException();
-            };
+        switch (operator) {
+            case "==" -> {
+                return new RBinaryOperator((l, r) -> new NumberValue(l.getValue().equals(r.getValue())), false);
+            }
+
+            case "||" -> {
+                return new RBinaryOperator((l, r) -> new NumberValue(l.getBoolean() || r.getBoolean()), false);
+            }
+
+            default -> {
+                if (lhs == Type.getNumber() && rhs == Type.getNumber()) {
+                    return switch (operator) {
+                        case "+", "+=" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() + r.getDouble()),
+                                    operator.equals("+="));
+                        case "-", "-=" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() - r.getDouble()),
+                                    operator.equals("-="));
+                        case "*", "*=" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() * r.getDouble()),
+                                    operator.equals("*="));
+                        case "/", "/=" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() / r.getDouble()),
+                                    operator.equals("/="));
+                        case "%", "%=" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() % r.getDouble()),
+                                    operator.equals("%="));
+
+                        default -> throw new IllegalStateException();
+                    };
+                }
+
+                throw new IllegalStateException(String.format(
+                        "undefined binary operator '%s %s %s'",
+                        lhs.name,
+                        operator,
+                        rhs.name));
+            }
         }
-        throw new IllegalStateException(String.format("undefined operator '%s %s %s'", lhs.name, operator, rhs.name));
+    }
+
+    public IUnaryOperator getUnaryOperator(final String operator, final Type type) {
+        assert operator != null;
+        assert type != null;
+
+        switch (operator) {
+            case "!" -> {
+                return v -> new NumberValue(!v.getBoolean());
+            }
+
+            default -> {
+                throw new IllegalStateException(
+                        String.format(
+                                "undefined unary operator '%s%s'",
+                                operator,
+                                type.name));
+            }
+        }
     }
 
     public void defineVariable(final String name, final IValue value) {
-        if (variables.containsKey(name))
-            throw new IllegalStateException(String.format("redefining variable '%s'", name));
+        assert name != null;
+        assert value != null;
+        assert !variables.containsKey(name);
+
         variables.put(name, new Variable(name, value));
     }
 
     public Variable getVariable(final String name) {
+        assert name != null;
+
         if (variables.containsKey(name))
             return variables.get(name);
-        if (hasParent())
-            return parent.getVariable(name);
-        throw new IllegalStateException(String.format("undefined variable '%s'", name));
+
+        assert hasParent();
+        return parent.getVariable(name);
     }
 
     public Variable setVariable(final String name, final IValue value) {
-        if (variables.containsKey(name)) {
-            final var variable = variables.get(name);
-            variable.value = value;
-            return variable;
-        }
-        if (hasParent())
-            return parent.setVariable(name, value);
-        throw new IllegalStateException(String.format("undefined variable '%s'", name));
+        assert name != null;
+        assert value != null;
+
+        final var variable = getVariable(name);
+        variable.value = value;
+        return variable;
     }
 
     public IValue getAllVarargs() {
         if (varargs == null) {
-            if (hasParent())
-                return parent.getAllVarargs();
-            throw new IllegalStateException("no varargs in this environment");
+            assert hasParent();
+            return parent.getAllVarargs();
         }
 
         return new ArrayValue(varargs);
     }
 
     public IValue getVararg(final IValue index) {
+        assert index != null;
+
         if (varargs == null) {
-            if (hasParent())
-                return parent.getVararg(index);
-            throw new IllegalStateException("no varargs in this environment");
+            assert hasParent();
+            return parent.getVararg(index);
         }
 
         final var idx = index.getInt();
@@ -111,18 +174,19 @@ public class Env {
     }
 
     public IValue call(final String name, final IValue[] args) {
+        assert name != null;
+        assert args != null;
+
         final var function = getFunction(name);
         final var env = new Env(global);
 
-        if (args.length < function.args.length)
-            throw new IllegalStateException("not enought arguments");
+        assert args.length >= function.args.length;
 
         int i = 0;
         for (; i < function.args.length; ++i)
             env.defineVariable(function.args[i], args[i]);
 
-        if (!function.varargs && i < args.length)
-            throw new IllegalStateException("too many arguments");
+        assert function.varargs || i >= args.length;
 
         final var f = i;
         env.varargs = new IValue[args.length - f];
@@ -137,15 +201,13 @@ public class Env {
         final var function = getFunction(name);
         final var env = new Env(global);
 
-        if (args.length < function.args.length)
-            throw new IllegalStateException("not enought arguments");
+        assert args.length >= function.args.length;
 
         int i = 0;
         for (; i < function.args.length; ++i)
             env.defineVariable(function.args[i], IValue.fromJava(args[i]));
 
-        if (!function.varargs && i < args.length)
-            throw new IllegalStateException("too many arguments");
+        assert function.varargs || i >= args.length;
 
         final var f = i;
         env.varargs = new IValue[args.length - f];

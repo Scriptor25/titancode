@@ -10,7 +10,8 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": "src/main/resources/ghost.ttc"
+            "args": "src/main/resources/ghost.ttc",
+            "vmArgs": "-ea"
         }
     ]
 }

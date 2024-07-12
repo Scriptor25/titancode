@@ -9,6 +9,9 @@ public class CallExpression extends Expression {
     public final Expression[] args;
 
     public CallExpression(final Expression callee, final Expression[] args) {
+        assert callee != null;
+        assert args != null;
+
         this.callee = callee;
         this.args = args;
     }
@@ -28,6 +31,8 @@ public class CallExpression extends Expression {
 
     @Override
     public IValue evaluate(final Env env) {
+        assert env != null;
+
         final var name = ((IDExpression) callee).name;
         final var eargs = new IValue[args.length];
         for (int i = 0; i < args.length; ++i)

@@ -15,9 +15,9 @@ public class NativeExpression extends Expression {
     private final Method method;
     private final boolean isVoid;
 
-    public NativeExpression(final CallExpression expression) {
-        name = ((StringExpression) expression.args[0]).value;
-        args = Arrays.copyOfRange(expression.args, 1, expression.args.length);
+    public NativeExpression(final String name, final Expression[] args) {
+        this.name = name;
+        this.args = args;
 
         final var delimIdx = name.lastIndexOf('.');
         final String methodName;
@@ -38,8 +38,8 @@ public class NativeExpression extends Expression {
         final var opt = Arrays.stream(clazz.getMethods())
                 .filter(m -> m.getName().equals(methodName))
                 .findFirst();
-        if (opt.isEmpty())
-            throw new IllegalStateException(String.format("undefined native function '%s'", name));
+        assert opt.isPresent();
+
         method = opt.get();
         isVoid = method.getReturnType() == void.class || method.getReturnType() == Void.class;
     }

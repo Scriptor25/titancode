@@ -2,27 +2,28 @@
 
 ## About
 
-TitanCode (the wip title) is a simple programming language run by an interpreter based on Java. It has a highly functional character, e.g. in contrast to the fully object oriented Java language.
+TitanCode (wip title) is a simple toy programming language run by an interpreter based on Java. It has a highly functional character, e.g. in contrast to the fully object oriented Java language. It's currently in the making, so don't expect too much. If you don't understand this documentation because I have written it very poorly, just take a look at the examples in the [resources](src/main/resources/) directory.
 
 ## Features
 
- - multiline comment delimiter: ```#```
  - no types
- - no semicolons
- - define functions: ```def <name>(<arg>...) = ...```
- - define variables: ```def <name> = ...```
- - functions can have variadic arguments
- - for-each-in-range expressions: ```[<from>, <to>]{<var>} ...```, ```{<var>}``` is optional
- - return value of a function is always the value of its last expression
+ - no semicolons or other line delimiters
+ - comments: ```# ... #```
+ - define variables: ```def <name> = <expression>```
+ - define functions: ```def <name>(<arg>..., ?) = <expression>```
  - function calls: ```<name>(<arg>...)```
  - use of native Java functions: ```native("<name>", <arg>...)```
  - use variadic args:
-    - get all: ```?```
+    - get variadic array: ```?```
     - get by index: ```?{<index>}```
+ - if: ```if <condition> <expression> else <expression>```
+ - while: ```while <condition> <expression>```
+ - range: ```[<from>, <to>]{<var>} <expression>```, ```{<var>}``` is optional
+ - if, while, range and functions return the last evaluated expressions value
 
 ## WIP
 
- - logic flow: if, while, switch
+ - control flow: switch
  - file includes
  - early return, break, continue
  - char "type"

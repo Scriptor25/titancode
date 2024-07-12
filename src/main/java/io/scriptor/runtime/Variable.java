@@ -6,6 +6,9 @@ public class Variable {
     public IValue value;
 
     public Variable(final String name, final IValue value) {
+        assert name != null;
+        assert value != null;
+
         this.name = name;
         this.value = value;
     }

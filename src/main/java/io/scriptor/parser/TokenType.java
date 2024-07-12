@@ -16,5 +16,6 @@ public enum TokenType {
     SEMICOLON,
     COLON,
     STRING,
-    QUEST
+    QUEST,
+    EXCLAM
 }

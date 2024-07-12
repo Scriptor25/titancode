@@ -8,6 +8,8 @@ public class GroupExpression extends Expression {
     public final Expression[] expressions;
 
     public GroupExpression(final Expression[] expressions) {
+        assert expressions != null;
+
         this.expressions = expressions;
     }
 
@@ -23,6 +25,8 @@ public class GroupExpression extends Expression {
 
     @Override
     public IValue evaluate(final Env env) {
+        assert env != null;
+
         IValue result = null;
         final var env1 = new Env(env);
         for (final var expression : expressions) {

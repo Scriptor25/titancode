@@ -9,12 +9,25 @@ public class WhileExpression extends Expression {
     public final Expression expression;
 
     public WhileExpression(final Expression condition, final Expression expression) {
+        assert condition != null;
+        assert expression != null;
+
         this.condition = condition;
         this.expression = expression;
     }
 
     @Override
     public IValue evaluate(final Env env) {
-        throw new UnsupportedOperationException("Unimplemented method 'evaluate'");
+        assert env != null;
+
+        IValue result = null;
+        while (true) {
+            final var c = condition.evaluate(env);
+            if (!c.getBoolean())
+                break;
+            result = expression.evaluate(env);
+        }
+
+        return result;
     }
 }

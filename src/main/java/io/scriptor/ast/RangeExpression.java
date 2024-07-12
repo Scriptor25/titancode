@@ -11,6 +11,10 @@ public class RangeExpression extends Expression {
     public final Expression expression;
 
     public RangeExpression(final Expression from, final Expression to, final String id, final Expression expression) {
+        assert from != null;
+        assert to != null;
+        assert expression != null;
+
         this.from = from;
         this.to = to;
         this.id = id;
@@ -26,14 +30,19 @@ public class RangeExpression extends Expression {
 
     @Override
     public IValue evaluate(final Env env) {
+        assert env != null;
+
         final var efrom = from.evaluate(env).getDouble();
         final var eto = to.evaluate(env).getDouble();
+
+        IValue result = null;
         for (double i = efrom; i < eto; ++i) {
             final var env1 = new Env(env);
             if (id != null)
                 env1.defineVariable(id, IValue.fromJava(i));
-            expression.evaluate(env1);
+            result = expression.evaluate(env1);
         }
-        return null;
+
+        return result;
     }
 }

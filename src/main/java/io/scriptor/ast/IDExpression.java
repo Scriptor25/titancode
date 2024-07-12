@@ -8,6 +8,8 @@ public class IDExpression extends Expression {
     public final String name;
 
     public IDExpression(final String name) {
+        assert name != null;
+
         this.name = name;
     }
 
@@ -18,6 +20,8 @@ public class IDExpression extends Expression {
 
     @Override
     public IValue evaluate(final Env env) {
+        assert env != null;
+
         return env.getVariable(name).value;
     }
 }

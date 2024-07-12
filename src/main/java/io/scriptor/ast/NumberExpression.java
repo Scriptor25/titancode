@@ -9,6 +9,8 @@ public class NumberExpression extends Expression {
     public final double value;
 
     public NumberExpression(final String value) {
+        assert value != null;
+
         this.value = Double.parseDouble(value);
     }
 

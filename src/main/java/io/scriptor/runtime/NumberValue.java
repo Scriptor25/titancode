@@ -8,9 +8,18 @@ public class NumberValue implements IValue {
         this.value = value;
     }
 
+    public NumberValue(final boolean value) {
+        this.value = value ? 1.0 : 0.0;
+    }
+
     @Override
     public Double getValue() {
         return value;
+    }
+
+    @Override
+    public boolean getBoolean() {
+        return value != 0;
     }
 
     @Override

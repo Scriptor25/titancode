@@ -13,6 +13,8 @@ public class VarargsExpression extends Expression {
 
     @Override
     public IValue evaluate(final Env env) {
+        assert env != null;
+
         if (index == null)
             return env.getAllVarargs();
         return env.getVararg(index.evaluate(env));

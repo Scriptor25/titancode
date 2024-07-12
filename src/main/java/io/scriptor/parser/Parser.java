@@ -21,6 +21,7 @@ import io.scriptor.ast.NativeExpression;
 import io.scriptor.ast.NumberExpression;
 import io.scriptor.ast.RangeExpression;
 import io.scriptor.ast.StringExpression;
+import io.scriptor.ast.UnaryExpression;
 import io.scriptor.ast.VarargsExpression;
 import io.scriptor.ast.WhileExpression;
 
@@ -207,6 +208,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                             chr = get();
                             return token = new Token(TokenType.QUEST, value);
 
+                        case '!':
+                            value += (char) chr;
+                            chr = get();
+                            return token = new Token(TokenType.EXCLAM, value);
+
                         default:
                             if (chr <= 0x20)
                                 break;
@@ -290,11 +296,13 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     }
 
     public boolean at(final TokenType type) {
-        return token != null && token.type() == type;
+        assert token != null;
+        return token.type() == type;
     }
 
     public boolean at(final String value) {
-        return token != null && token.value().equals(value);
+        assert token != null;
+        return token.value().equals(value);
     }
 
     public boolean at(final String... values) {
@@ -305,19 +313,18 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return false;
     }
 
+    public boolean atEOF() {
+        return token == null;
+    }
+
     public Token expect(final TokenType type) throws IOException {
-        if (at(type)) {
-            return skip();
-        }
-        throw new IllegalStateException();
+        assert at(type);
+        return skip();
     }
 
     public void expect(final String value) throws IOException {
-        if (at(value)) {
-            next();
-            return;
-        }
-        throw new IllegalStateException();
+        assert at(value);
+        next();
     }
 
     public Token skip() throws IOException {
@@ -398,13 +405,8 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             args = null;
         }
 
-        final Expression expression;
-        if (at("=")) {
-            next();
-            expression = parse();
-        } else {
-            expression = null;
-        }
+        expect("=");
+        final Expression expression = parse();
 
         return new DefExpression(name, args, varargs, expression);
     }
@@ -414,8 +416,15 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
         expect("native");
         expect(TokenType.PAREN_OPEN);
-        final var name = expect(TokenType.STRING);
+        final var name = expect(TokenType.STRING).value();
+        final List<Expression> arglist = new Vector<>();
+        while (at(TokenType.COMMA)) {
+            next();
+            arglist.add(parse());
+        }
         expect(TokenType.PAREN_CLOSE);
+
+        return new NativeExpression(name, arglist.toArray(Expression[]::new));
     }
 
     public WhileExpression parseWhile() throws IOException {
@@ -455,7 +464,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     }
 
     public Expression parseBinary(Expression lhs, int minPrecedence) throws IOException {
-        while (at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) >= minPrecedence) {
+        while (!atEOF() && at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) >= minPrecedence) {
             final var op = skip().value();
             final var opPrecedence = precedences.get(op);
             var rhs = parseCall();
@@ -470,7 +479,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
     public Expression parseCall() throws IOException {
         var expression = parsePrimary();
-        if (at(TokenType.PAREN_OPEN)) {
+        if (!atEOF() && at(TokenType.PAREN_OPEN)) {
             next();
             final List<Expression> args = new Vector<>();
             while (!at(TokenType.PAREN_CLOSE)) {
@@ -527,6 +536,12 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                 index = null;
             }
             return new VarargsExpression(index);
+        }
+
+        if (at(TokenType.EXCLAM)) {
+            next();
+            final var expression = parse();
+            return new UnaryExpression("!", expression);
         }
 
         throw new IllegalStateException();

@@ -10,6 +10,10 @@ public class BinaryExpression extends Expression {
     public final Expression rhs;
 
     public BinaryExpression(final String operator, final Expression lhs, final Expression rhs) {
+        assert operator != null;
+        assert lhs != null;
+        assert rhs != null;
+
         this.operator = operator;
         this.lhs = lhs;
         this.rhs = rhs;
@@ -22,6 +26,8 @@ public class BinaryExpression extends Expression {
 
     @Override
     public IValue evaluate(final Env env) {
+        assert env != null;
+
         if (operator.equals("=")) {
             final var name = ((IDExpression) lhs).name;
             final var value = rhs.evaluate(env);
@@ -31,7 +37,15 @@ public class BinaryExpression extends Expression {
 
         final var left = lhs.evaluate(env);
         final var right = rhs.evaluate(env);
-        final var op = env.getOperator(operator, left.getType(), right.getType());
-        return op.evaluate(left, right);
+        final var op = env.getBinaryOperator(operator, left.getType(), right.getType());
+        final var value = op.operator().evaluate(left, right);
+
+        if (op.reassign()) {
+            final var name = ((IDExpression) lhs).name;
+            final var variable = env.setVariable(name, value);
+            return variable.value;
+        }
+
+        return value;
     }
 }

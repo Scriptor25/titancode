@@ -9,6 +9,8 @@ public class StringExpression extends Expression {
     public final String value;
 
     public StringExpression(final String value) {
+        assert value != null;
+
         this.value = value;
     }
 
