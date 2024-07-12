@@ -33,11 +33,7 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": [
-                "src/main/resources/donut.ttc",
-                "40",
-                "20"
-            ],
+            "args": "src/main/resources/donut.ttc",
             "vmArgs": "-ea"
         }
     ]
