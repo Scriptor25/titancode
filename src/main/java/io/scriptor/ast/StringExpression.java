@@ -2,7 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.StringValue;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public class StringExpression extends Expression {
 
@@ -15,7 +15,7 @@ public class StringExpression extends Expression {
     }
 
     @Override
-    public IValue evaluate(final Env env) {
+    public Value evaluate(final Env env) {
         return new StringValue(value);
     }
 }

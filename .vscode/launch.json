@@ -6,11 +6,29 @@
     "configurations": [
         {
             "type": "java",
-            "name": "TitanCode",
+            "name": "Fibonacci",
+            "request": "launch",
+            "mainClass": "io.scriptor.TitanCode",
+            "projectName": "titancode",
+            "args": "src/main/resources/fib.ttc",
+            "vmArgs": "-ea"
+        },
+        {
+            "type": "java",
+            "name": "Ghost Game",
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
             "args": "src/main/resources/ghost.ttc",
+            "vmArgs": "-ea"
+        },
+        {
+            "type": "java",
+            "name": "Donut",
+            "request": "launch",
+            "mainClass": "io.scriptor.TitanCode",
+            "projectName": "titancode",
+            "args": "src/main/resources/donut.ttc",
             "vmArgs": "-ea"
         }
     ]

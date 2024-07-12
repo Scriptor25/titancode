@@ -3,9 +3,9 @@ package io.scriptor.runtime;
 public class Variable {
 
     public final String name;
-    public IValue value;
+    public Value value;
 
-    public Variable(final String name, final IValue value) {
+    public Variable(final String name, final Value value) {
         assert name != null;
         assert value != null;
 

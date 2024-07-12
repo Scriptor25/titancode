@@ -1,9 +1,9 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public abstract class Expression {
 
-    public abstract IValue evaluate(final Env env);
+    public abstract Value evaluate(final Env env);
 }

@@ -1,6 +1,7 @@
 package io.scriptor;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import io.scriptor.parser.Parser;
 import io.scriptor.runtime.Env;
@@ -21,6 +22,9 @@ public class TitanCode {
     }
 
     public static void printf(final String format, final Object... args) {
+        for (int i = 0; i < args.length; ++i)
+            if (args[i] instanceof Object[])
+                args[i] = Arrays.toString((Object[]) args[i]);
         System.out.printf(format, args);
     }
 
@@ -34,5 +38,13 @@ public class TitanCode {
 
     public static double number(final String string) {
         return Double.parseDouble(string);
+    }
+
+    public static String string(final Object object) {
+        return object.toString();
+    }
+
+    public static void putchar(final char x) {
+        System.out.print(x);
     }
 }

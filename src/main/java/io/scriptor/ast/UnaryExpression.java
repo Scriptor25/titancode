@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public class UnaryExpression extends Expression {
 
@@ -14,7 +14,7 @@ public class UnaryExpression extends Expression {
     }
 
     @Override
-    public IValue evaluate(final Env env) {
+    public Value evaluate(final Env env) {
         final var value = expression.evaluate(env);
         final var op = env.getUnaryOperator(operator, value.getType());
         return op.evaluate(value);

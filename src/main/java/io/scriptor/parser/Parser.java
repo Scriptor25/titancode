@@ -12,11 +12,14 @@ import java.util.Vector;
 
 import io.scriptor.ast.BinaryExpression;
 import io.scriptor.ast.CallExpression;
-import io.scriptor.ast.DefExpression;
+import io.scriptor.ast.CharExpression;
+import io.scriptor.ast.DefFunctionExpression;
+import io.scriptor.ast.DefVariableExpression;
 import io.scriptor.ast.Expression;
 import io.scriptor.ast.GroupExpression;
 import io.scriptor.ast.IDExpression;
 import io.scriptor.ast.IfExpression;
+import io.scriptor.ast.IndexExpression;
 import io.scriptor.ast.NativeExpression;
 import io.scriptor.ast.NumberExpression;
 import io.scriptor.ast.RangeExpression;
@@ -27,23 +30,23 @@ import io.scriptor.ast.WhileExpression;
 
 public class Parser implements AutoCloseable, Iterable<Expression> {
 
-    private static boolean isDigit(final int chr) {
+    public static boolean isDigit(final int chr) {
         return 0x30 <= chr && chr <= 0x39;
     }
 
-    private static boolean isAlpha(final int chr) {
+    public static boolean isAlpha(final int chr) {
         return (0x41 <= chr && chr <= 0x5A) || (0x61 <= chr && chr <= 0x7A);
     }
 
-    private static boolean isAlnum(final int chr) {
+    public static boolean isAlnum(final int chr) {
         return isDigit(chr) || isAlpha(chr);
     }
 
-    private static boolean isID(final int chr) {
+    public static boolean isID(final int chr) {
         return isAlnum(chr) || chr == '_';
     }
 
-    private static boolean isOp(final int chr) {
+    public static boolean isOp(final int chr) {
         return chr == '+'
                 || chr == '-'
                 || chr == '*'
@@ -131,6 +134,44 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return stream.read();
     }
 
+    public void escape() throws IOException {
+        if (chr != '\\')
+            return;
+
+        chr = get();
+        switch (chr) {
+            case 'b' -> {
+                chr = '\b';
+                return;
+            }
+            case 'f' -> {
+                chr = '\f';
+                return;
+            }
+            case 'n' -> {
+                chr = '\n';
+                return;
+            }
+            case 'r' -> {
+                chr = '\r';
+                return;
+            }
+            case 't' -> {
+                chr = '\t';
+                return;
+            }
+            case 'x' -> {
+                chr = get();
+                String value = "";
+                value += (char) chr;
+                chr = get();
+                value += (char) chr;
+                chr = Integer.parseInt(value, 16);
+                return;
+            }
+        }
+    }
+
     public Token next() throws IOException {
         if (chr < 0)
             chr = get();
@@ -151,6 +192,10 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
                         case '"':
                             mode = ParserMode.STRING;
+                            break;
+
+                        case '\'':
+                            mode = ParserMode.CHAR;
                             break;
 
                         case '(':
@@ -250,15 +295,18 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                         return token = new Token(TokenType.STRING, value);
                     }
                     if (chr == '\\') {
+                        escape();
+                    }
+                    value += (char) chr;
+                    break;
+
+                case CHAR:
+                    if (chr == '\'') {
                         chr = get();
-                        chr = switch (chr) {
-                            case 'b' -> '\b';
-                            case 'f' -> '\f';
-                            case 'n' -> '\n';
-                            case 'r' -> '\r';
-                            case 't' -> '\t';
-                            default -> chr;
-                        };
+                        return token = new Token(TokenType.CHAR, value);
+                    }
+                    if (chr == '\\') {
+                        escape();
                     }
                     value += (char) chr;
                     break;
@@ -353,62 +401,56 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return new GroupExpression(expressions.toArray(Expression[]::new));
     }
 
-    public RangeExpression parseRange() throws IOException {
-        // [<from>, <to>] {<id>} <expression>
-
-        expect(TokenType.BRACKET_OPEN);
-        final var from = parse();
-        expect(TokenType.COMMA);
-        final var to = parse();
-        expect(TokenType.BRACKET_CLOSE);
-
-        final String id;
-        if (at(TokenType.BRACE_OPEN)) {
-            next();
-            id = expect(TokenType.ID).value();
-            expect(TokenType.BRACE_CLOSE);
-        } else {
-            id = null;
-        }
-
-        final var expression = parse();
-
-        return new RangeExpression(from, to, id, expression);
-    }
-
-    public DefExpression parseDef() throws IOException {
-        // def <name>(<arg>...) = <expression>
+    public Expression parseDef() throws IOException {
+        // def <name>
 
         expect("def");
         final var name = expect(TokenType.ID).value();
 
-        final String[] args;
-        boolean varargs = false;
         if (at(TokenType.PAREN_OPEN)) {
+            // def <name>(<arg>..., ?) = <expression>
+
             next();
 
             final List<String> arglist = new Vector<>();
+            boolean varargs = false;
             while (!at(TokenType.PAREN_CLOSE)) {
                 if (at(TokenType.QUEST)) {
                     next();
                     varargs = true;
                     break;
                 }
+
                 arglist.add(expect(TokenType.ID).value());
+
                 if (!at(TokenType.PAREN_CLOSE))
                     expect(TokenType.COMMA);
             }
             expect(TokenType.PAREN_CLOSE);
 
-            args = arglist.toArray(String[]::new);
-        } else {
-            args = null;
+            expect("=");
+            final var expression = parse();
+
+            return new DefFunctionExpression(name, arglist.toArray(String[]::new), varargs, expression);
+        }
+
+        if (at(TokenType.BRACKET_OPEN)) {
+            // array
+
+            next();
+            final var size = parse();
+            expect(TokenType.BRACKET_CLOSE);
+
+            expect("=");
+            final var expression = parse();
+
+            return new DefVariableExpression(name, size, expression);
         }
 
         expect("=");
-        final Expression expression = parse();
+        final var expression = parse();
 
-        return new DefExpression(name, args, varargs, expression);
+        return new DefVariableExpression(name, expression);
     }
 
     public NativeExpression parseNative() throws IOException {
@@ -427,8 +469,40 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return new NativeExpression(name, arglist.toArray(Expression[]::new));
     }
 
+    public RangeExpression parseFor() throws IOException {
+        // for [<from>, <to>, <step>] -> <id> <expression>
+
+        expect("for");
+        expect(TokenType.BRACKET_OPEN);
+        final var from = parse();
+        expect(TokenType.COMMA);
+        final var to = parse();
+
+        final Expression step;
+        if (at(TokenType.BRACKET_CLOSE)) {
+            next();
+            step = null;
+        } else {
+            expect(TokenType.COMMA);
+            step = parse();
+            expect(TokenType.BRACKET_CLOSE);
+        }
+
+        final String id;
+        if (at("->")) {
+            next();
+            id = expect(TokenType.ID).value();
+        } else {
+            id = null;
+        }
+
+        final var expression = parse();
+
+        return new RangeExpression(from, to, step, id, expression);
+    }
+
     public WhileExpression parseWhile() throws IOException {
-        // while <condition> <expression>
+        // while [<condition>] <expression>
 
         expect("while");
         expect(TokenType.BRACKET_OPEN);
@@ -440,7 +514,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     }
 
     public IfExpression parseIf() throws IOException {
-        // if <condition> <expression> else <expression>
+        // if [<condition>] <expression> else <expression>
 
         expect("if");
         expect(TokenType.BRACKET_OPEN);
@@ -464,6 +538,8 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     }
 
     public Expression parseBinary(Expression lhs, int minPrecedence) throws IOException {
+        // <expression> <operator> <expression>
+
         while (!atEOF() && at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) >= minPrecedence) {
             final var op = skip().value();
             final var opPrecedence = precedences.get(op);
@@ -478,7 +554,9 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     }
 
     public Expression parseCall() throws IOException {
-        var expression = parsePrimary();
+        // <callee>(<arg>...)
+
+        var expression = parseIndex();
         if (!atEOF() && at(TokenType.PAREN_OPEN)) {
             next();
             final List<Expression> args = new Vector<>();
@@ -493,10 +571,26 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return expression;
     }
 
+    public Expression parseIndex() throws IOException {
+        // <expression>[<index>]
+
+        var expression = parsePrimary();
+        while (!atEOF() && at(TokenType.BRACKET_OPEN)) {
+            next();
+            final var index = parse();
+            expect(TokenType.BRACKET_CLOSE);
+            expression = new IndexExpression(expression, index);
+        }
+        return expression;
+    }
+
     public Expression parsePrimary() throws IOException {
 
         if (at("native"))
             return parseNative();
+
+        if (at("for"))
+            return parseFor();
 
         if (at("while"))
             return parseWhile();
@@ -514,6 +608,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return new NumberExpression(value);
         }
 
+        if (at(TokenType.CHAR)) {
+            final var value = skip().value();
+            return new CharExpression(value);
+        }
+
         if (at(TokenType.STRING)) {
             final var value = skip().value();
             return new StringExpression(value);
@@ -522,20 +621,9 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         if (at(TokenType.PAREN_OPEN))
             return parseGroup();
 
-        if (at(TokenType.BRACKET_OPEN))
-            return parseRange();
-
         if (at(TokenType.QUEST)) {
             next();
-            final Expression index;
-            if (at(TokenType.BRACE_OPEN)) {
-                next();
-                index = parse();
-                expect(TokenType.BRACE_CLOSE);
-            } else {
-                index = null;
-            }
-            return new VarargsExpression(index);
+            return new VarargsExpression();
         }
 
         if (at(TokenType.EXCLAM)) {

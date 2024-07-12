@@ -4,7 +4,7 @@ def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
 def fib(n) = (
     def a1 = 1
     def a2 = 0
-    [0, n - 1] (
+    for [0, n - 1] (
         def b = a1 + a2
         a2 = a1
         a1 = b
@@ -15,7 +15,8 @@ def N = 10
 
 # entry point #
 def main(count, ?) = (
-    [0, count]{i} printf("%5.0f | %s\n", i, ?{i})
+    for [0, count] -> i
+        printf("%5.0f | %s\n", i, ?[i])
 
     def fibN = fib(N)
     printf("fib(%.0f) = %.0f\n", N, fibN)

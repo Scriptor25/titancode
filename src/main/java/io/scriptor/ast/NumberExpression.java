@@ -2,7 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.NumberValue;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public class NumberExpression extends Expression {
 
@@ -20,7 +20,7 @@ public class NumberExpression extends Expression {
     }
 
     @Override
-    public IValue evaluate(final Env env) {
+    public Value evaluate(final Env env) {
         return new NumberValue(value);
     }
 }

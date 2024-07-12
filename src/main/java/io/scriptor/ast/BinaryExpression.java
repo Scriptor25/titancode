@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public class BinaryExpression extends Expression {
 
@@ -25,14 +25,22 @@ public class BinaryExpression extends Expression {
     }
 
     @Override
-    public IValue evaluate(final Env env) {
+    public Value evaluate(final Env env) {
         assert env != null;
 
         if (operator.equals("=")) {
-            final var name = ((IDExpression) lhs).name;
             final var value = rhs.evaluate(env);
-            final var variable = env.setVariable(name, value);
-            return variable.value;
+            if (lhs instanceof IDExpression e) {
+                final var name = e.name;
+                final var variable = env.setVariable(name, value);
+                return variable.value;
+            }
+            if (lhs instanceof IndexExpression e) {
+                final var index = e.index.evaluate(env).getInt();
+                final var array = e.expression.evaluate(env);
+                return array.setAt(index, value);
+            }
+            throw new IllegalStateException();
         }
 
         final var left = lhs.evaluate(env);

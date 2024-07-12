@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public class WhileExpression extends Expression {
 
@@ -17,10 +17,10 @@ public class WhileExpression extends Expression {
     }
 
     @Override
-    public IValue evaluate(final Env env) {
+    public Value evaluate(final Env env) {
         assert env != null;
 
-        IValue result = null;
+        Value result = null;
         while (true) {
             final var c = condition.evaluate(env);
             if (!c.getBoolean())

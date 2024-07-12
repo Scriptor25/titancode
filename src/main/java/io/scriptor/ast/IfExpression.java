@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public class IfExpression extends Expression {
 
@@ -19,7 +19,7 @@ public class IfExpression extends Expression {
     }
 
     @Override
-    public IValue evaluate(final Env env) {
+    public Value evaluate(final Env env) {
         assert env != null;
 
         final var c = condition.evaluate(env);

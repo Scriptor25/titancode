@@ -7,4 +7,5 @@ public enum ParserMode {
     ID,
     BINARY_OPERATOR,
     STRING,
+    CHAR,
 }

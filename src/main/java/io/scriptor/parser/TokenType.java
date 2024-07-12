@@ -17,5 +17,6 @@ public enum TokenType {
     COLON,
     STRING,
     QUEST,
-    EXCLAM
+    EXCLAM,
+    CHAR
 }

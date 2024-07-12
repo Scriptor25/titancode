@@ -1,0 +1,103 @@
+def sin(x) = native("java.lang.Math.sin", x)
+def cos(x) = native("java.lang.Math.cos", x)
+def floor(x) = native("java.lang.Math.floor", x)
+def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
+def putchar(x) = native("io.scriptor.TitanCode.putchar", x)
+
+def pi = 3.141596
+def pi2 = 2 * pi
+
+def screen_width = 40
+def screen_height = 20
+
+def screen_width2 = screen_width / 2
+def screen_height2 = screen_height / 2
+
+def theta_spacing = 0.07
+def phi_spacing = 0.02
+
+def R1 = 1
+def R2 = 2
+def K2 = 5
+
+def K1 = screen_width * K2 * 3 / (8 * (R1 + R2))
+
+def thetas = floor(pi2 / theta_spacing)
+def theta_sin[thetas] = 0
+def theta_cos[thetas] = 0
+
+def phis = floor(pi2 / phi_spacing)
+def phi_sin[phis] = 0
+def phi_cos[phis] = 0
+
+def render_frame(A, B) = (
+    def cosA = cos(A)
+    def sinA = sin(A)
+    def cosB = cos(B)
+    def sinB = sin(B)
+
+    def output[screen_width * screen_height] = ' '
+    def zbuffer[screen_width * screen_height] = 0
+
+    for [0, thetas] -> theta (
+        def sintheta = theta_sin[theta]
+        def costheta = theta_cos[theta]
+
+        for [0, phis] -> phi (
+            def sinphi = phi_sin[phi]
+            def cosphi = phi_cos[phi]
+
+            def circlex = R2 + R1 * costheta
+            def circley = R1 * sintheta
+
+            def x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - circley * cosA * sinB
+            def y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + circley * cosA * cosB
+            def z = K2 + cosA * circlex * sinphi + circley * sinA
+            def ooz = 1 / z
+
+            def k1_ooz = K1 * ooz
+            def xp = floor(screen_width2 + k1_ooz * x)
+            def yp = floor(screen_height2 - k1_ooz * y)
+
+            if [!(xp < 0 || xp >= screen_width || yp < 0 || yp >= screen_height)] (
+
+                def L = cosphi * costheta * sinB - cosA * costheta * sinphi - sinA * sintheta + cosB * (cosA * sintheta - costheta * sinA * sinphi)
+
+                if [L > 0] (
+                    def idx = xp + yp * screen_width
+                    if [ooz > zbuffer[idx]] (
+                        zbuffer[idx] = ooz
+                        output[idx] = ".,-~:;=!*#$@"[floor(L * 8)]
+                    )
+                )
+            )
+        )
+    )
+
+    printf("\x1B\x9BH\x1B\x9BJ")
+    for [0, screen_height] -> j (
+        def jw = j * screen_width
+        for [0, screen_width] -> i
+            printf("%c ", output[i + jw])
+        putchar('\n')
+    )
+)
+
+def main(count, ?) = (
+    for [0, thetas] -> theta (
+        def t = pi2 * theta / thetas
+        theta_sin[theta] = sin(t)
+        theta_cos[theta] = cos(t)
+    )
+    for [0, phis] -> phi (
+        def t = pi2 * phi / phis
+        phi_sin[phi] = sin(t)
+        phi_cos[phi] = cos(t)
+    )
+
+    def a = 0
+    def b = 0
+    while [1]
+        render_frame(a += 0.04, b += 0.07)
+    0
+)

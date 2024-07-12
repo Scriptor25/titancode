@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public class GroupExpression extends Expression {
 
@@ -24,10 +24,10 @@ public class GroupExpression extends Expression {
     }
 
     @Override
-    public IValue evaluate(final Env env) {
+    public Value evaluate(final Env env) {
         assert env != null;
 
-        IValue result = null;
+        Value result = null;
         final var env1 = new Env(env);
         for (final var expression : expressions) {
             result = expression.evaluate(env1);

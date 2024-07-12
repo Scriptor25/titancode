@@ -11,7 +11,7 @@ public class Env {
     private final Env global;
     private final Map<String, Function> functions = new HashMap<>();
     private final Map<String, Variable> variables = new HashMap<>();
-    private IValue[] varargs;
+    private Value[] varargs;
 
     public Env() {
         this.parent = null;
@@ -93,6 +93,21 @@ public class Env {
                                     (l, r) -> new NumberValue(l.getDouble() % r.getDouble()),
                                     operator.equals("%="));
 
+                        case "<" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() < r.getDouble()),
+                                    false);
+
+                        case ">" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() > r.getDouble()),
+                                    false);
+
+                        case ">=" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() >= r.getDouble()),
+                                    false);
+
                         default -> throw new IllegalStateException();
                     };
                 }
@@ -125,7 +140,7 @@ public class Env {
         }
     }
 
-    public void defineVariable(final String name, final IValue value) {
+    public void defineVariable(final String name, final Value value) {
         assert name != null;
         assert value != null;
         assert !variables.containsKey(name);
@@ -143,7 +158,7 @@ public class Env {
         return parent.getVariable(name);
     }
 
-    public Variable setVariable(final String name, final IValue value) {
+    public Variable setVariable(final String name, final Value value) {
         assert name != null;
         assert value != null;
 
@@ -152,16 +167,16 @@ public class Env {
         return variable;
     }
 
-    public IValue getAllVarargs() {
+    public Value getVarargs() {
         if (varargs == null) {
             assert hasParent();
-            return parent.getAllVarargs();
+            return parent.getVarargs();
         }
 
         return new ArrayValue(varargs);
     }
 
-    public IValue getVararg(final IValue index) {
+    public Value getVararg(final Value index) {
         assert index != null;
 
         if (varargs == null) {
@@ -173,7 +188,7 @@ public class Env {
         return varargs[idx];
     }
 
-    public IValue call(final String name, final IValue[] args) {
+    public Value call(final String name, final Value[] args) {
         assert name != null;
         assert args != null;
 
@@ -189,7 +204,7 @@ public class Env {
         assert function.varargs || i >= args.length;
 
         final var f = i;
-        env.varargs = new IValue[args.length - f];
+        env.varargs = new Value[args.length - f];
         for (; i < args.length; ++i)
             env.varargs[i - f] = args[i];
 
@@ -205,14 +220,14 @@ public class Env {
 
         int i = 0;
         for (; i < function.args.length; ++i)
-            env.defineVariable(function.args[i], IValue.fromJava(args[i]));
+            env.defineVariable(function.args[i], Value.fromJava(args[i]));
 
         assert function.varargs || i >= args.length;
 
         final var f = i;
-        env.varargs = new IValue[args.length - f];
+        env.varargs = new Value[args.length - f];
         for (; i < args.length; ++i)
-            env.varargs[i - f] = IValue.fromJava(args[i]);
+            env.varargs[i - f] = Value.fromJava(args[i]);
 
         final var result = function.expression.evaluate(env);
         return (R) result.getValue();

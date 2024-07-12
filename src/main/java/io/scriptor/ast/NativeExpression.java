@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import io.scriptor.runtime.Env;
-import io.scriptor.runtime.IValue;
+import io.scriptor.runtime.Value;
 
 public class NativeExpression extends Expression {
 
@@ -45,7 +45,7 @@ public class NativeExpression extends Expression {
     }
 
     @Override
-    public IValue evaluate(final Env env) {
+    public Value evaluate(final Env env) {
         try {
             final var eargs = new Object[args.length];
             for (int i = 0; i < args.length; ++i)
@@ -54,7 +54,7 @@ public class NativeExpression extends Expression {
             final var result = method.invoke(null, eargs);
             if (isVoid)
                 return null;
-            return IValue.fromJava(result);
+            return Value.fromJava(result);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

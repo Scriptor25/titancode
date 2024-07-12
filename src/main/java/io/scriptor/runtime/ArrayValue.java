@@ -1,10 +1,10 @@
 package io.scriptor.runtime;
 
-public class ArrayValue implements IValue {
+public class ArrayValue extends Value {
 
-    private final IValue[] values;
+    private final Value[] values;
 
-    public ArrayValue(final IValue... values) {
+    public ArrayValue(final Value... values) {
         assert values != null;
 
         this.values = values;
@@ -24,18 +24,38 @@ public class ArrayValue implements IValue {
     }
 
     @Override
-    public Type getType() {
-        return Type.getArray();
+    public Value getAt(final int index) {
+        assert index >= 0;
+        assert index < values.length;
+        return values[index];
     }
 
     @Override
-    public String toString() {
-        final var builder = new StringBuilder().append("[ ");
-        for (int i = 0; i < values.length; ++i) {
-            if (i > 0)
-                builder.append(", ");
-            builder.append(values[i]);
-        }
-        return builder.append(" ]").toString();
+    public Value setAt(final int index, final Value value) {
+        assert index >= 0;
+        assert index < values.length;
+        assert value != null;
+        return values[index] = value;
+    }
+
+    @Override
+    public String getString() {
+        // final var builder = new StringBuilder().append("[ ");
+        // for (int i = 0; i < values.length; ++i) {
+        // if (i > 0)
+        // builder.append(", ");
+        // builder.append(values[i]);
+        // }
+        // return builder.append(" ]").toString();
+        
+        final var builder = new StringBuilder();
+        for (final var value : values)
+            builder.append(value);
+        return builder.toString();
+    }
+
+    @Override
+    public Type getType() {
+        return Type.getArray();
     }
 }

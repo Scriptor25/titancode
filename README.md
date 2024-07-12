@@ -10,6 +10,7 @@ TitanCode (wip title) is a simple toy programming language run by an interpreter
  - no semicolons or other line delimiters
  - comments: ```# ... #```
  - define variables: ```def <name> = <expression>```
+ - define arrays: ```def <name>[<size>] = <expression>```, fills the array with ```<expression>```
  - define functions: ```def <name>(<arg>..., ?) = <expression>```
  - function calls: ```<name>(<arg>...)```
  - use of native Java functions: ```native("<name>", <arg>...)```
@@ -27,4 +28,4 @@ TitanCode (wip title) is a simple toy programming language run by an interpreter
  - file includes
  - early return, break, continue
  - char "type"
- - real arrays and objects
+ - objects

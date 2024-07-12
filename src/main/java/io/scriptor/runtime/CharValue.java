@@ -1,19 +1,15 @@
 package io.scriptor.runtime;
 
-public class NumberValue extends Value {
+public class CharValue extends Value {
 
-    private final double value;
+    private final char value;
 
-    public NumberValue(final double value) {
+    public CharValue(final char value) {
         this.value = value;
     }
 
-    public NumberValue(final boolean value) {
-        this.value = value ? 1.0 : 0.0;
-    }
-
     @Override
-    public Double getValue() {
+    public Character getValue() {
         return value;
     }
 
@@ -29,7 +25,7 @@ public class NumberValue extends Value {
 
     @Override
     public char getChar() {
-        return (char) value;
+        return value;
     }
 
     @Override
@@ -39,17 +35,17 @@ public class NumberValue extends Value {
 
     @Override
     public int getInt() {
-        return (int) value;
+        return value;
     }
 
     @Override
     public long getLong() {
-        return (long) value;
+        return value;
     }
 
     @Override
     public float getFloat() {
-        return (float) value;
+        return value;
     }
 
     @Override
@@ -59,11 +55,11 @@ public class NumberValue extends Value {
 
     @Override
     public String getString() {
-        return Double.toString(value);
+        return Character.toString(value);
     }
 
     @Override
     public Type getType() {
-        return Type.getNumber();
+        return Type.getChar();
     }
 }

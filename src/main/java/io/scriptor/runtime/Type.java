@@ -11,6 +11,7 @@ public class Type {
         new Type("number");
         new Type("string");
         new Type("array");
+        new Type("char");
     }
 
     public static Type get(final String name) {
@@ -30,6 +31,10 @@ public class Type {
 
     public static Type getArray() {
         return get("array");
+    }
+
+    public static Type getChar() {
+        return get("char");
     }
 
     public final String name;

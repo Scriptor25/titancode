@@ -1,6 +1,6 @@
 package io.scriptor.runtime;
 
-public class StringValue implements IValue {
+public class StringValue extends Value {
 
     private final String value;
 
@@ -21,12 +21,19 @@ public class StringValue implements IValue {
     }
 
     @Override
-    public Type getType() {
-        return Type.getString();
+    public Value getAt(final int index) {
+        assert index >= 0;
+        assert index < value.length();
+        return new CharValue(value.charAt(index));
     }
 
     @Override
-    public String toString() {
+    public String getString() {
         return value;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.getString();
     }
 }
