@@ -8,11 +8,18 @@ public abstract class Value {
         if (value instanceof Void)
             return null;
 
-        if (value instanceof Number)
-            return new NumberValue(((Number) value).doubleValue());
+        if (value instanceof Object[] array) {
+            final var values = new Value[array.length];
+            for (int i = 0; i < values.length; ++i)
+                values[i] = fromJava(array[i]);
+            return new ArrayValue(values);
+        }
 
-        if (value instanceof CharSequence)
-            return new StringValue(((CharSequence) value).toString());
+        if (value instanceof Number n)
+            return new NumberValue(n.doubleValue());
+
+        if (value instanceof CharSequence cs)
+            return new StringValue(cs.toString());
 
         throw new IllegalStateException("no type equivalent");
     }

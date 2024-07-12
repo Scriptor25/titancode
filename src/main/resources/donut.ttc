@@ -2,16 +2,11 @@ def sin(x) = native("java.lang.Math.sin", x)
 def cos(x) = native("java.lang.Math.cos", x)
 def floor(x) = native("java.lang.Math.floor", x)
 def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
-def putchar(x) = native("io.scriptor.TitanCode.putchar", x)
+def putchar(char) = native("io.scriptor.TitanCode.putchar", char)
+def number(string) = native("io.scriptor.TitanCode.number", string)
 
 def pi = 3.141596
 def pi2 = 2 * pi
-
-def screen_width = 40
-def screen_height = 20
-
-def screen_width2 = screen_width / 2
-def screen_height2 = screen_height / 2
 
 def theta_spacing = 0.07
 def phi_spacing = 0.02
@@ -20,15 +15,20 @@ def R1 = 1
 def R2 = 2
 def K2 = 5
 
-def K1 = screen_width * K2 * 3 / (8 * (R1 + R2))
+def screen_width
+def screen_height
+def screen_width2
+def screen_height2
+
+def K1
 
 def thetas = floor(pi2 / theta_spacing)
-def theta_sin[thetas] = 0
-def theta_cos[thetas] = 0
+def theta_sin[thetas]
+def theta_cos[thetas]
 
 def phis = floor(pi2 / phi_spacing)
-def phi_sin[phis] = 0
-def phi_cos[phis] = 0
+def phi_sin[phis]
+def phi_cos[phis]
 
 def render_frame(A, B) = (
     def cosA = cos(A)
@@ -84,11 +84,27 @@ def render_frame(A, B) = (
 )
 
 def main(count, ?) = (
+
+    if [count > 1] (
+        screen_width = number(?[1])
+        screen_height = number(?[2])
+    )
+    else (
+        screen_width = 40
+        screen_height = 20
+    )
+
+    screen_width2 = screen_width / 2
+    screen_height2 = screen_height / 2
+
+    K1 = screen_width * K2 * 3 / (8 * (R1 + R2))
+
     for [0, thetas] -> theta (
         def t = pi2 * theta / thetas
         theta_sin[theta] = sin(t)
         theta_cos[theta] = cos(t)
     )
+    
     for [0, phis] -> phi (
         def t = pi2 * phi / phis
         phi_sin[phi] = sin(t)

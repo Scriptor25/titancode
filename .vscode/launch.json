@@ -10,7 +10,12 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": "src/main/resources/fib.ttc",
+            "args": [
+                "src/main/resources/fib.ttc",
+                "Hello",
+                "World",
+                "!"
+            ],
             "vmArgs": "-ea"
         },
         {
@@ -28,7 +33,11 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": "src/main/resources/donut.ttc",
+            "args": [
+                "src/main/resources/donut.ttc",
+                "40",
+                "20"
+            ],
             "vmArgs": "-ea"
         }
     ]

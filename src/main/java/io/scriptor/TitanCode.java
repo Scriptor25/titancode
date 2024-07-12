@@ -13,12 +13,16 @@ public class TitanCode {
         final var parser = new Parser(filename);
         final var env = new Env();
         for (final var expression : parser) {
-            System.out.println(expression);
             expression.evaluate(env);
         }
         parser.close();
 
-        final double result = env.call("main", 3, "Hello", "World", "!");
+        final var cmd = new Object[args.length + 1];
+        cmd[0] = args.length;
+        for (int i = 0; i < args.length; ++i)
+            cmd[i + 1] = args[i];
+
+        final double result = env.call("main", cmd);
         System.out.printf("Exit Code %.0f%n", result);
     }
 

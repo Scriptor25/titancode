@@ -387,8 +387,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return parseDef();
 
         final var expression = parseBinary();
-        // return ConstExpression.makeConst(expression);
-        return expression;
+        return ConstExpression.makeConst(expression);
     }
 
     public GroupExpression parseGroup() throws IOException {
@@ -438,20 +437,32 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         }
 
         if (at(TokenType.BRACKET_OPEN)) {
-            // array
+            // def <name>[<size>] = <expression>
 
             next();
             final var size = parse();
             expect(TokenType.BRACKET_CLOSE);
 
-            expect("=");
-            final var expression = parse();
+            final Expression expression;
+            if (at("=")) {
+                next();
+                expression = parse();
+            } else {
+                expression = null;
+            }
 
             return new DefVariableExpression(name, size, expression);
         }
 
-        expect("=");
-        final var expression = parse();
+        // def <name> = <expression>
+
+        final Expression expression;
+        if (at("=")) {
+            next();
+            expression = parse();
+        } else {
+            expression = null;
+        }
 
         return new DefVariableExpression(name, expression);
     }

@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.NumberValue;
 import io.scriptor.runtime.Value;
 
 public class DefVariableExpression extends Expression {
@@ -14,7 +15,6 @@ public class DefVariableExpression extends Expression {
 
     public DefVariableExpression(final String name, final Expression expression) {
         assert name != null;
-        assert expression != null;
 
         this.name = name;
         this.size = null;
@@ -24,7 +24,6 @@ public class DefVariableExpression extends Expression {
     public DefVariableExpression(final String name, final Expression size, final Expression expression) {
         assert name != null;
         assert size != null;
-        assert expression != null;
 
         this.name = name;
         this.size = size;
@@ -42,9 +41,15 @@ public class DefVariableExpression extends Expression {
     public Value evaluate(final Env env) {
         assert env != null;
 
+        final Value value;
+        if (expression != null) {
+            value = expression.evaluate(env);
+        } else {
+            value = new NumberValue(0);
+        }
+
         if (size != null) {
             final var esize = size.evaluate(env).getInt();
-            final var value = expression.evaluate(env);
             final var values = new Value[esize];
             Arrays.fill(values, value);
             final var array = new ArrayValue(values);
@@ -52,7 +57,7 @@ public class DefVariableExpression extends Expression {
             return null;
         }
 
-        env.defineVariable(name, expression.evaluate(env));
+        env.defineVariable(name, value);
         return null;
     }
 }
