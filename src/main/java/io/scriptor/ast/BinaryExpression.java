@@ -1,5 +1,6 @@
 package io.scriptor.ast;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -9,7 +10,13 @@ public class BinaryExpression extends Expression {
     public final Expression lhs;
     public final Expression rhs;
 
-    public BinaryExpression(final String operator, final Expression lhs, final Expression rhs) {
+    public BinaryExpression(
+            final RLocation location,
+            final String operator,
+            final Expression lhs,
+            final Expression rhs) {
+        super(location);
+
         assert operator != null;
         assert lhs != null;
         assert rhs != null;

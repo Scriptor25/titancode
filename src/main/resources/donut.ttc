@@ -109,7 +109,7 @@ def main(count, ?) = (
     def b = 0
     while [1] (
         def dt = render_frame(a += 0.04, b += 0.07)
-        printf("%-4.0f\n", dt)
+        printf("%-4.0f%n", dt)
     )
     0
 )

@@ -14,7 +14,11 @@ public class ConstExpression extends Expression {
     public final Value value;
 
     private ConstExpression(final Expression expression) {
+        super(expression.location);
+
+        assert expression != null;
         assert expression.isConstant();
+
         this.value = expression.evaluate(new Env());
     }
 

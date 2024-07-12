@@ -1,5 +1,6 @@
 package io.scriptor.ast;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -10,8 +11,14 @@ public class DefFunctionExpression extends Expression {
     public final boolean varargs;
     public final Expression expression;
 
-    public DefFunctionExpression(final String name, final String[] args, final boolean varargs,
+    public DefFunctionExpression(
+            final RLocation location,
+            final String name,
+            final String[] args,
+            final boolean varargs,
             final Expression expression) {
+        super(location);
+
         assert name != null;
         assert args != null;
         assert expression != null;

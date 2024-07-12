@@ -1,5 +1,6 @@
 package io.scriptor.ast;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.StringValue;
 import io.scriptor.runtime.Value;
@@ -8,7 +9,9 @@ public class StringExpression extends Expression {
 
     public final String value;
 
-    public StringExpression(final String value) {
+    public StringExpression(final RLocation location, final String value) {
+        super(location);
+
         assert value != null;
 
         this.value = value;

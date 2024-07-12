@@ -3,6 +3,7 @@ package io.scriptor.ast;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -15,7 +16,12 @@ public class NativeExpression extends Expression {
     private final Method method;
     private final boolean isVoid;
 
-    public NativeExpression(final String name, final Expression[] args) {
+    public NativeExpression(final RLocation location, final String name, final Expression[] args) {
+        super(location);
+
+        assert name != null;
+        assert args != null;
+
         this.name = name;
         this.args = args;
 

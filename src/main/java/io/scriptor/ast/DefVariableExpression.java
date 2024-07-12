@@ -2,6 +2,7 @@ package io.scriptor.ast;
 
 import java.util.Arrays;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.NumberValue;
@@ -13,7 +14,9 @@ public class DefVariableExpression extends Expression {
     public final Expression size;
     public final Expression expression;
 
-    public DefVariableExpression(final String name, final Expression expression) {
+    public DefVariableExpression(final RLocation location, final String name, final Expression expression) {
+        super(location);
+
         assert name != null;
 
         this.name = name;
@@ -21,7 +24,13 @@ public class DefVariableExpression extends Expression {
         this.expression = expression;
     }
 
-    public DefVariableExpression(final String name, final Expression size, final Expression expression) {
+    public DefVariableExpression(
+            final RLocation location,
+            final String name,
+            final Expression size,
+            final Expression expression) {
+        super(location);
+
         assert name != null;
         assert size != null;
 

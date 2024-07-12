@@ -1,5 +1,6 @@
 package io.scriptor.ast;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -12,11 +13,14 @@ public class RangeExpression extends Expression {
     public final Expression expression;
 
     public RangeExpression(
+            final RLocation location,
             final Expression from,
             final Expression to,
             final Expression step,
             final String id,
             final Expression expression) {
+        super(location);
+
         assert from != null;
         assert to != null;
         assert expression != null;

@@ -1,5 +1,6 @@
 package io.scriptor.ast;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -9,7 +10,13 @@ public class IfExpression extends Expression {
     public final Expression branchTrue;
     public final Expression branchFalse;
 
-    public IfExpression(final Expression condition, final Expression branchTrue, final Expression branchFalse) {
+    public IfExpression(
+            final RLocation location,
+            final Expression condition,
+            final Expression branchTrue,
+            final Expression branchFalse) {
+        super(location);
+
         assert condition != null;
         assert branchTrue != null;
 

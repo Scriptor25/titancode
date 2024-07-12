@@ -1,5 +1,6 @@
 package io.scriptor.ast;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -7,7 +8,9 @@ public class GroupExpression extends Expression {
 
     public final Expression[] expressions;
 
-    public GroupExpression(final Expression[] expressions) {
+    public GroupExpression(final RLocation location, final Expression[] expressions) {
+        super(location);
+
         assert expressions != null;
 
         this.expressions = expressions;

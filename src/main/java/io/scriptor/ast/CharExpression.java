@@ -1,5 +1,6 @@
 package io.scriptor.ast;
 
+import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.CharValue;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
@@ -8,8 +9,11 @@ public class CharExpression extends Expression {
 
     public final char value;
 
-    public CharExpression(final String value) {
+    public CharExpression(final RLocation location, final String value) {
+        super(location);
+
         assert value != null;
+        
         this.value = value.charAt(0);
     }
 
