@@ -15,12 +15,28 @@ public class GroupExpression extends Expression {
 
     @Override
     public String toString() {
+        if (expressions.length == 1)
+            return String.format("(%s)", expressions[0]);
+
         final var builder = new StringBuilder();
+        final var spaces = new StringBuilder();
+        for (int i = 0; i < depth; ++i)
+            spaces.append("  ");
+        ++depth;
         builder.append("(\n");
         for (final var expression : expressions)
-            builder.append(expression).append("\n");
-        builder.append(")");
+            builder.append(spaces).append("  ").append(expression).append('\n');
+        builder.append(spaces).append(')');
+        --depth;
         return builder.toString();
+    }
+
+    @Override
+    public boolean isConstant() {
+        for (final var expression : expressions)
+            if (!expression.isConstant())
+                return false;
+        return true;
     }
 
     @Override

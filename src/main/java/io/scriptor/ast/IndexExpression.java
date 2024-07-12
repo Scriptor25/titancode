@@ -17,6 +17,16 @@ public class IndexExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        return String.format("%s[%s]", expression, index);
+    }
+
+    @Override
+    public boolean isConstant() {
+        return expression.isConstant() && index.isConstant();
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         final var eindex = index.evaluate(env);
         final var value = expression.evaluate(env);

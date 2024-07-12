@@ -34,6 +34,11 @@ public class RangeExpression extends Expression {
     }
 
     @Override
+    public boolean isConstant() {
+        return from.isConstant() && to.isConstant() && (step == null || step.isConstant()) && expression.isConstant();
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         assert env != null;
 

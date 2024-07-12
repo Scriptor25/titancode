@@ -13,6 +13,7 @@ public class TitanCode {
         final var parser = new Parser(filename);
         final var env = new Env();
         for (final var expression : parser) {
+            System.out.println(expression);
             expression.evaluate(env);
         }
         parser.close();

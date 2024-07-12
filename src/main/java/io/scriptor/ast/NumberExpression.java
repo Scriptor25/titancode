@@ -20,6 +20,11 @@ public class NumberExpression extends Expression {
     }
 
     @Override
+    public boolean isConstant() {
+        return true;
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         return new NumberValue(value);
     }

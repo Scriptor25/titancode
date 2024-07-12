@@ -14,6 +14,11 @@ public class UnaryExpression extends Expression {
     }
 
     @Override
+    public boolean isConstant() {
+        return expression.isConstant();
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         final var value = expression.evaluate(env);
         final var op = env.getUnaryOperator(operator, value.getType());

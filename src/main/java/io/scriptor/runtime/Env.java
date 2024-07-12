@@ -20,7 +20,6 @@ public class Env {
 
     public Env(final Env parent) {
         assert parent != null;
-
         this.parent = parent;
         this.global = parent.global;
     }

@@ -13,6 +13,7 @@ import java.util.Vector;
 import io.scriptor.ast.BinaryExpression;
 import io.scriptor.ast.CallExpression;
 import io.scriptor.ast.CharExpression;
+import io.scriptor.ast.ConstExpression;
 import io.scriptor.ast.DefFunctionExpression;
 import io.scriptor.ast.DefVariableExpression;
 import io.scriptor.ast.Expression;
@@ -385,7 +386,9 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         if (at("def"))
             return parseDef();
 
-        return parseBinary();
+        final var expression = parseBinary();
+        // return ConstExpression.makeConst(expression);
+        return expression;
     }
 
     public GroupExpression parseGroup() throws IOException {

@@ -14,6 +14,16 @@ public class CharExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        return value >= 0x20 ? "'" + Character.toString(value) + "'" : "' '";
+    }
+
+    @Override
+    public boolean isConstant() {
+        return true;
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         return new CharValue(value);
     }

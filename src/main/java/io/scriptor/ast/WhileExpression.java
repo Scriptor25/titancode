@@ -17,6 +17,16 @@ public class WhileExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        return String.format("while [%s] %s", condition, expression);
+    }
+
+    @Override
+    public boolean isConstant() {
+        return condition.isConstant() && expression.isConstant();
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         assert env != null;
 

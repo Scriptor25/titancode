@@ -25,6 +25,11 @@ public class BinaryExpression extends Expression {
     }
 
     @Override
+    public boolean isConstant() {
+        return lhs.isConstant() && rhs.isConstant();
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         assert env != null;
 

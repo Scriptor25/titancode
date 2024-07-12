@@ -19,6 +19,16 @@ public class IfExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        return String.format("if [%s] %s else %s", condition, branchTrue, branchFalse);
+    }
+
+    @Override
+    public boolean isConstant() {
+        return condition.isConstant() && branchTrue.isConstant() && (branchFalse == null || branchFalse.isConstant());
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         assert env != null;
 

@@ -15,6 +15,18 @@ public class StringExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        final var builder = new StringBuilder().append('"');
+        value.chars().filter(c -> c >= 0x20).forEach(c -> builder.append((char) c));
+        return builder.append('"').toString();
+    }
+
+    @Override
+    public boolean isConstant() {
+        return true;
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         return new StringValue(value);
     }

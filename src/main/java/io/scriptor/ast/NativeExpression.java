@@ -45,6 +45,14 @@ public class NativeExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        final var argstr = new StringBuilder();
+        for (final var arg : args)
+            argstr.append(", ").append(arg);
+        return String.format("native(\"%s\"%s)", name, argstr);
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         try {
             final var eargs = new Object[args.length];
