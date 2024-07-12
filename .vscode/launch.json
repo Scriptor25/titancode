@@ -35,6 +35,15 @@
             "projectName": "titancode",
             "args": "src/main/resources/donut.ttc",
             "vmArgs": "-ea"
+        },
+        {
+            "type": "java",
+            "name": "Mandelbrot Set",
+            "request": "launch",
+            "mainClass": "io.scriptor.TitanCode",
+            "projectName": "titancode",
+            "args": "src/main/resources/mandel.ttc",
+            "vmArgs": "-ea"
         }
     ]
 }

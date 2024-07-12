@@ -64,6 +64,10 @@ public class Env {
                 return new RBinaryOperator((l, r) -> new NumberValue(l.getValue().equals(r.getValue())), false);
             }
 
+            case "&&" -> {
+                return new RBinaryOperator((l, r) -> new NumberValue(l.getBoolean() && r.getBoolean()), false);
+            }
+
             case "||" -> {
                 return new RBinaryOperator((l, r) -> new NumberValue(l.getBoolean() || r.getBoolean()), false);
             }
@@ -102,6 +106,11 @@ public class Env {
                                     (l, r) -> new NumberValue(l.getDouble() > r.getDouble()),
                                     false);
 
+                        case "<=" ->
+                            new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getDouble() <= r.getDouble()),
+                                    false);
+
                         case ">=" ->
                             new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() >= r.getDouble()),
@@ -130,6 +139,13 @@ public class Env {
             }
 
             default -> {
+                if (type == Type.getNumber()) {
+                    return switch (operator) {
+                        case "-" -> v -> new NumberValue(-v.getDouble());
+                        default -> throw new IllegalStateException();
+                    };
+                }
+
                 throw new IllegalStateException(
                         String.format(
                                 "undefined unary operator '%s%s'",

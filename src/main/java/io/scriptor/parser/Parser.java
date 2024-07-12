@@ -646,6 +646,12 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return new UnaryExpression("!", expression);
         }
 
+        if (at("-")) {
+            next();
+            final var expression = parse();
+            return new UnaryExpression("-", expression);
+        }
+
         throw new IllegalStateException();
     }
 }
