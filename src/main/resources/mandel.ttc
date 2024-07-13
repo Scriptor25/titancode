@@ -1,10 +1,11 @@
+include "std.ttc"
+
 def width = 80
 def height = 40
 def max_iteration = 100
 def sample_size = 10
 def palette = " .,-~:;=!*#$@"
 
-def putchar(x) = native("io.scriptor.TitanCode.putchar", x)
 def scale(x, xmin, xmax, min, max) = min + (max - min) * (xmax - x) / (xmax - xmin)
 def clamp(x, min, max) = if [x < min] min else if [x > max] max else x
 

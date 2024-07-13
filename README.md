@@ -30,9 +30,9 @@ TitanCode (wip title) is a simple toy programming language run by an interpreter
  - size of strings, arrays and objects: ```<expression>.size```
  - index into strings, arrays or objects: ```<expression>[<index>]```
  - get member of object: ```<object>.<member>```
+ - file includes: ```include "<absolute or relative path>"```
 
 ## WIP
 
  - control flow: switch
- - file includes
  - early return, break, continue

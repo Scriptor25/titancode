@@ -1,4 +1,4 @@
-def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
+include "std.ttc"
 
 def main(?) = (
 

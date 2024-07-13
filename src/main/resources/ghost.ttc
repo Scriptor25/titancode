@@ -1,10 +1,6 @@
-def random(min, max) = native("io.scriptor.TitanCode.random", min, max)
-def readLine() = native("io.scriptor.TitanCode.readLine")
-def number(string) = native("io.scriptor.TitanCode.number", string)
-def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
-def floor(x) = native("java.lang.Math.floor", x)
+include "std.ttc"
 
-def randomInt(min, max) = floor(random(min, max + 1))
+def randomInt(min, max) = floor(min + (max + 1 - min) * random())
 
 def main(?) = (
     def running = 1

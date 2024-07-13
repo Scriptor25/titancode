@@ -1,5 +1,6 @@
 package io.scriptor.parser;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +36,8 @@ import io.scriptor.runtime.Env;
 
 public class Parser implements AutoCloseable, Iterable<Expression> {
 
-    public static void parseFile(final String filename, final Env env) throws IOException {
-        try (final var parser = new Parser(filename, env)) {
+    public static void parseFile(final File file, final Env env) throws IOException {
+        try (final var parser = new Parser(file, env)) {
             for (final var expression : parser)
                 expression.evaluate(env);
         }
@@ -81,7 +82,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return new IllegalStateException(message);
     }
 
-    private final String filename;
+    private final File file;
     private final Env env;
     private final InputStream stream;
     private final Map<String, Integer> precedences = new HashMap<>();
@@ -91,10 +92,10 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     private int column = 0;
     private RToken token;
 
-    private Parser(final String filename, final Env env) throws IOException {
-        this.filename = filename;
+    private Parser(final File file, final Env env) throws IOException {
+        this.file = file;
         this.env = env;
-        this.stream = new FileInputStream(filename);
+        this.stream = new FileInputStream(file);
         next();
 
         precedences.put("=", 0);
@@ -229,12 +230,12 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                             break;
 
                         case '"':
-                            loc = new RLocation(filename, row, column);
+                            loc = new RLocation(file, row, column);
                             mode = ParserMode.STRING;
                             break;
 
                         case '\'':
-                            loc = new RLocation(filename, row, column);
+                            loc = new RLocation(file, row, column);
                             mode = ParserMode.CHAR;
                             break;
 
@@ -246,27 +247,27 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                             }
 
                             if (isDigit(chr)) {
-                                loc = new RLocation(filename, row, column);
+                                loc = new RLocation(file, row, column);
                                 mode = ParserMode.NUMBER;
                                 value += (char) chr;
                                 break;
                             }
 
                             if (isID(chr)) {
-                                loc = new RLocation(filename, row, column);
+                                loc = new RLocation(file, row, column);
                                 mode = ParserMode.ID;
                                 value += (char) chr;
                                 break;
                             }
 
                             if (isOp(chr)) {
-                                loc = new RLocation(filename, row, column);
+                                loc = new RLocation(file, row, column);
                                 mode = ParserMode.BINARY_OPERATOR;
                                 value += (char) chr;
                                 break;
                             }
 
-                            loc = new RLocation(filename, row, column);
+                            loc = new RLocation(file, row, column);
                             value += (char) chr;
                             chr = get();
                             return token = new RToken(loc, TokenType.OTHER, value);
@@ -374,8 +375,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
         expect("include");
         final var filename = expect(TokenType.STRING).value();
+        var file = new File(filename);
+        if (!file.isAbsolute())
+            file = new File(this.file.getParentFile(), filename);
 
-        parseFile(filename, env);
+        parseFile(file, env);
     }
 
     private Expression parse() throws IOException {

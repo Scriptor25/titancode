@@ -1,5 +1,6 @@
 package io.scriptor;
 
+import java.io.File;
 import java.io.IOException;
 
 import io.scriptor.parser.Parser;
@@ -11,7 +12,7 @@ public class TitanCode {
         final var filename = args[0];
         final var env = new Env();
 
-        Parser.parseFile(filename, env);
+        Parser.parseFile(new File(filename).getCanonicalFile(), env);
 
         final double result = env.call("main", (Object[]) args);
         System.out.printf("Exit Code %.0f%n", result);

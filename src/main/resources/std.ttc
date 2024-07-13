@@ -1,0 +1,16 @@
+# IO #
+def putchar(c) = native("io.scriptor.TitanCode.putchar", c)
+def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
+def readLine() = native("io.scriptor.TitanCode.readLine")
+
+# MATH #
+def sin(x) = native("java.lang.Math.sin", x)
+def cos(x) = native("java.lang.Math.cos", x)
+def floor(x) = native("java.lang.Math.floor", x)
+def random() = native("java.lang.Math.random")
+
+# TIME #
+def millis() = native("java.lang.System.currentTimeMillis")
+
+# TYPES #
+def number(str) = native("io.scriptor.TitanCode.number", str)

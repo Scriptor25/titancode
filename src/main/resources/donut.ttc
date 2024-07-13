@@ -1,10 +1,4 @@
-def sin(x) = native("java.lang.Math.sin", x)
-def cos(x) = native("java.lang.Math.cos", x)
-def floor(x) = native("java.lang.Math.floor", x)
-def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
-def putchar(char) = native("io.scriptor.TitanCode.putchar", char)
-def number(string) = native("io.scriptor.TitanCode.number", string)
-def millis() = native("java.lang.System.currentTimeMillis")
+include "std.ttc"
 
 def pi = 3.141596
 def pi2 = 2 * pi
