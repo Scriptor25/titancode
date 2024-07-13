@@ -14,8 +14,8 @@ def fib(n) = (
 def N = 10
 
 # entry point #
-def main(count, ?) = (
-    for [0, count] -> i
+def main(?) = (
+    for [0, ?.size] -> i
         printf("%5.0f | %s%n", i, ?[i])
 
     def fibN = fib(N)

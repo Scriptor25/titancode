@@ -21,11 +21,18 @@ TitanCode (wip title) is a simple toy programming language run by an interpreter
  - while: ```while <condition> <expression>```
  - range: ```[<from>, <to>]{<var>} <expression>```, ```{<var>}``` is optional
  - if, while, range and functions return the last evaluated expressions value
+ - strings: ```"<string>"```
+ - numbers: decimal, with and without floating point
+ - chars: ```'<char>'```
+ - arrays: ```[<expression>, ...]```
+ - objects: ```{<name> = <expression>, ...}```
+ - string representation of any value: ```<expression>.string```
+ - size of strings, arrays and objects: ```<expression>.size```
+ - index into strings, arrays or objects: ```<expression>[<index>]```
+ - get member of object: ```<object>.<member>```
 
 ## WIP
 
  - control flow: switch
  - file includes
  - early return, break, continue
- - char "type"
- - objects

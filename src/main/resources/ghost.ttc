@@ -6,7 +6,7 @@ def floor(x) = native("java.lang.Math.floor", x)
 
 def randomInt(min, max) = floor(random(min, max + 1))
 
-def main(count, ?) = (
+def main(?) = (
     def running = 1
     def score = 0
 

@@ -20,6 +20,10 @@ public class Env {
 
     public Env(final Env parent) {
         assert parent != null;
+
+        if (parent == null)
+            throw new IllegalStateException("parent must not be null");
+
         this.parent = parent;
         this.global = parent.global;
     }
@@ -41,16 +45,40 @@ public class Env {
             final String[] args,
             final boolean varargs,
             final Expression expression) {
+        assert name != null;
+        assert args != null;
+        assert expression != null;
+        assert !functions.containsKey(name);
+
+        if (name == null)
+            throw new IllegalStateException("name must not be null");
+
+        if (args == null)
+            throw new IllegalStateException("args must not be null");
+
+        if (expression == null)
+            throw new IllegalStateException("expression must not be null");
+
+        if (functions.containsKey(name))
+            throw new IllegalStateException("function does already exist");
+
         functions.put(name, new Function(name, args, varargs, expression));
     }
 
     public Function getFunction(final String name) {
         assert name != null;
 
+        if (name == null)
+            throw new IllegalStateException("name must not be null");
+
         if (functions.containsKey(name))
             return functions.get(name);
 
         assert hasParent();
+
+        if (!hasParent())
+            throw new IllegalStateException("no such function");
+
         return parent.getFunction(name);
     }
 
@@ -58,6 +86,15 @@ public class Env {
         assert operator != null;
         assert lhs != null;
         assert rhs != null;
+
+        if (operator == null)
+            throw new IllegalStateException("operator must not be null");
+
+        if (lhs == null)
+            throw new IllegalStateException("lhs must not be null");
+
+        if (rhs == null)
+            throw new IllegalStateException("rhs must not be null");
 
         switch (operator) {
             case "==" -> {
@@ -74,54 +111,61 @@ public class Env {
 
             default -> {
                 if (lhs == Type.getNumber() && rhs == Type.getNumber()) {
-                    return switch (operator) {
-                        case "+", "+=" ->
-                            new RBinaryOperator(
+                    switch (operator) {
+                        case "+", "+=" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() + r.getDouble()),
                                     operator.equals("+="));
-                        case "-", "-=" ->
-                            new RBinaryOperator(
+                        }
+                        case "-", "-=" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() - r.getDouble()),
                                     operator.equals("-="));
-                        case "*", "*=" ->
-                            new RBinaryOperator(
+                        }
+                        case "*", "*=" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() * r.getDouble()),
                                     operator.equals("*="));
-                        case "/", "/=" ->
-                            new RBinaryOperator(
+                        }
+                        case "/", "/=" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() / r.getDouble()),
                                     operator.equals("/="));
-                        case "%", "%=" ->
-                            new RBinaryOperator(
+                        }
+                        case "%", "%=" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() % r.getDouble()),
                                     operator.equals("%="));
+                        }
 
-                        case "<" ->
-                            new RBinaryOperator(
+                        case "<" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() < r.getDouble()),
                                     false);
+                        }
 
-                        case ">" ->
-                            new RBinaryOperator(
+                        case ">" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() > r.getDouble()),
                                     false);
+                        }
 
-                        case "<=" ->
-                            new RBinaryOperator(
+                        case "<=" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() <= r.getDouble()),
                                     false);
+                        }
 
-                        case ">=" ->
-                            new RBinaryOperator(
+                        case ">=" -> {
+                            return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() >= r.getDouble()),
                                     false);
-
-                        default -> throw new IllegalStateException();
-                    };
+                        }
+                    }
                 }
 
                 throw new IllegalStateException(String.format(
-                        "undefined binary operator '%s %s %s'",
+                        "no such binary operator '%s %s %s'",
                         lhs.name,
                         operator,
                         rhs.name));
@@ -140,15 +184,16 @@ public class Env {
 
             default -> {
                 if (type == Type.getNumber()) {
-                    return switch (operator) {
-                        case "-" -> v -> new NumberValue(-v.getDouble());
-                        default -> throw new IllegalStateException();
-                    };
+                    switch (operator) {
+                        case "-" -> {
+                            return v -> new NumberValue(-v.getDouble());
+                        }
+                    }
                 }
 
                 throw new IllegalStateException(
                         String.format(
-                                "undefined unary operator '%s%s'",
+                                "no such unary operator '%s%s'",
                                 operator,
                                 type.name));
             }
@@ -160,22 +205,44 @@ public class Env {
         assert value != null;
         assert !variables.containsKey(name);
 
+        if (name == null)
+            throw new IllegalStateException("name must not be null");
+
+        if (value == null)
+            throw new IllegalStateException("value must not be null");
+
+        if (variables.containsKey(name))
+            throw new IllegalStateException("variable does already exist");
+
         variables.put(name, new Variable(name, value));
     }
 
     public Variable getVariable(final String name) {
         assert name != null;
 
+        if (name == null)
+            throw new IllegalStateException("name must not be null");
+
         if (variables.containsKey(name))
             return variables.get(name);
 
         assert hasParent();
+
+        if (!hasParent())
+            throw new IllegalStateException("no such variable");
+
         return parent.getVariable(name);
     }
 
     public Variable setVariable(final String name, final Value value) {
         assert name != null;
         assert value != null;
+
+        if (name == null)
+            throw new IllegalStateException("name must not be null");
+
+        if (value == null)
+            throw new IllegalStateException("value must not be null");
 
         final var variable = getVariable(name);
         variable.value = value;
@@ -185,6 +252,10 @@ public class Env {
     public Value getVarargs() {
         if (varargs == null) {
             assert hasParent();
+
+            if (!hasParent())
+                throw new IllegalStateException("no varargs in this environment");
+
             return parent.getVarargs();
         }
 
@@ -196,6 +267,10 @@ public class Env {
 
         if (varargs == null) {
             assert hasParent();
+
+            if (!hasParent())
+                throw new IllegalStateException("no varargs in this environment");
+
             return parent.getVararg(index);
         }
 
@@ -212,11 +287,17 @@ public class Env {
 
         assert args.length >= function.args.length;
 
+        if (args.length < function.args.length)
+            throw new IllegalStateException("not enough arguments");
+
         int i = 0;
         for (; i < function.args.length; ++i)
             env.defineVariable(function.args[i], args[i]);
 
         assert function.varargs || i >= args.length;
+
+        if (!function.varargs && i < args.length)
+            throw new IllegalStateException("too many arguments");
 
         final var f = i;
         env.varargs = new Value[args.length - f];
@@ -233,11 +314,17 @@ public class Env {
 
         assert args.length >= function.args.length;
 
+        if (args.length < function.args.length)
+            throw new IllegalStateException("not enough arguments");
+
         int i = 0;
         for (; i < function.args.length; ++i)
             env.defineVariable(function.args[i], Value.fromJava(args[i]));
 
         assert function.varargs || i >= args.length;
+
+        if (!function.varargs && i < args.length)
+            throw new IllegalStateException("too many arguments");
 
         final var f = i;
         env.varargs = new Value[args.length - f];

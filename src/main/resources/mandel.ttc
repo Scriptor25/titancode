@@ -8,7 +8,7 @@ def putchar(x) = native("io.scriptor.TitanCode.putchar", x)
 def scale(x, xmin, xmax, min, max) = min + (max - min) * (xmax - x) / (xmax - xmin)
 def clamp(x, min, max) = if [x < min] min else if [x > max] max else x
 
-def main(count, ?) = (
+def main(?) = (
     for [0, height] -> j (
         for [0, width] -> i (
             def t = 0

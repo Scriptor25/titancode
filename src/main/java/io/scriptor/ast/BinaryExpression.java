@@ -52,6 +52,10 @@ public class BinaryExpression extends Expression {
                 final var array = e.expression.evaluate(env);
                 return array.setAt(index, value);
             }
+            if (lhs instanceof MemberExpression e) {
+                final var object = e.object.evaluate(env);
+                return object.putField(e.member, value);
+            }
             throw new IllegalStateException();
         }
 

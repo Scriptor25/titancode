@@ -1,21 +1,29 @@
 package io.scriptor.runtime;
 
+import java.util.Arrays;
+
 public class ArrayValue extends Value {
 
     private final Value[] values;
 
     public ArrayValue(final Value... values) {
         assert values != null;
-
         this.values = values;
+    }
+
+    public ArrayValue(final Object... values) {
+        this(Arrays
+                .stream(values)
+                .map(value -> Value.fromJava(value))
+                .toArray(Value[]::new));
     }
 
     @Override
     public Object[] getValue() {
-        final var objects = new Object[values.length];
-        for (int i = 0; i < objects.length; ++i)
-            objects[i] = values[i].getValue();
-        return objects;
+        return Arrays
+                .stream(values)
+                .map(value -> value.getValue())
+                .toArray(Object[]::new);
     }
 
     @Override
@@ -39,19 +47,23 @@ public class ArrayValue extends Value {
     }
 
     @Override
+    public Value getField(final String name) {
+        assert name != null;
+
+        if (name == null)
+            throw new IllegalStateException("name must not be null");
+
+        return switch (name) {
+            case "size" -> new NumberValue(values.length);
+            case "string" -> new StringValue(getString());
+
+            default -> throw new IllegalStateException("no such field");
+        };
+    }
+
+    @Override
     public String getString() {
-        // final var builder = new StringBuilder().append("[ ");
-        // for (int i = 0; i < values.length; ++i) {
-        // if (i > 0)
-        // builder.append(", ");
-        // builder.append(values[i]);
-        // }
-        // return builder.append(" ]").toString();
-        
-        final var builder = new StringBuilder();
-        for (final var value : values)
-            builder.append(value);
-        return builder.toString();
+        return Arrays.toString(values);
     }
 
     @Override

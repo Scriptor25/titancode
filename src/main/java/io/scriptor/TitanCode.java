@@ -1,7 +1,6 @@
 package io.scriptor;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import io.scriptor.parser.Parser;
 import io.scriptor.runtime.Env;
@@ -10,26 +9,15 @@ public class TitanCode {
 
     public static void main(String[] args) throws IOException {
         final var filename = args[0];
-        final var parser = new Parser(filename);
         final var env = new Env();
-        for (final var expression : parser) {
-            expression.evaluate(env);
-        }
-        parser.close();
 
-        final var cmd = new Object[args.length + 1];
-        cmd[0] = args.length;
-        for (int i = 0; i < args.length; ++i)
-            cmd[i + 1] = args[i];
+        Parser.parseFile(filename, env);
 
-        final double result = env.call("main", cmd);
+        final double result = env.call("main", (Object[]) args);
         System.out.printf("Exit Code %.0f%n", result);
     }
 
     public static void printf(final String format, final Object... args) {
-        for (int i = 0; i < args.length; ++i)
-            if (args[i] instanceof Object[])
-                args[i] = Arrays.toString((Object[]) args[i]);
         System.out.printf(format, args);
     }
 

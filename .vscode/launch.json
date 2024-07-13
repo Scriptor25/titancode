@@ -44,6 +44,15 @@
             "projectName": "titancode",
             "args": "src/main/resources/mandel.ttc",
             "vmArgs": "-ea"
+        },
+        {
+            "type": "java",
+            "name": "Object & Array Test",
+            "request": "launch",
+            "mainClass": "io.scriptor.TitanCode",
+            "projectName": "titancode",
+            "args": "src/main/resources/test.ttc",
+            "vmArgs": "-ea"
         }
     ]
 }

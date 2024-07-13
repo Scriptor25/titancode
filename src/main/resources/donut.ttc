@@ -89,7 +89,7 @@ def render_frame(A, B) = (
     millis() - start
 )
 
-def main(count, ?) = (
+def main(?) = (
 
     printf("\x1B\x9BH\x1B\x9BJ")
 

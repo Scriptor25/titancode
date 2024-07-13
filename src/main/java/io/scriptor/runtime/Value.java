@@ -8,12 +8,8 @@ public abstract class Value {
         if (value instanceof Void)
             return null;
 
-        if (value instanceof Object[] array) {
-            final var values = new Value[array.length];
-            for (int i = 0; i < values.length; ++i)
-                values[i] = fromJava(array[i]);
-            return new ArrayValue(values);
-        }
+        if (value instanceof Object[] array)
+            return new ArrayValue(array);
 
         if (value instanceof Number n)
             return new NumberValue(n.doubleValue());
@@ -21,7 +17,7 @@ public abstract class Value {
         if (value instanceof CharSequence cs)
             return new StringValue(cs.toString());
 
-        throw new IllegalStateException("no type equivalent");
+        return new ObjectValue(value);
     }
 
     public abstract Object getValue();
@@ -33,6 +29,14 @@ public abstract class Value {
     }
 
     public Value setAt(final int index, final Value value) {
+        throw new IllegalStateException();
+    }
+
+    public Value getField(final String name) {
+        throw new IllegalStateException();
+    }
+
+    public Value putField(final String name, final Value value) {
         throw new IllegalStateException();
     }
 

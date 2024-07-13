@@ -28,6 +28,20 @@ public class StringValue extends Value {
     }
 
     @Override
+    public Value getField(final String name) {
+        assert name != null;
+        assert name.equals("size");
+
+        if (name == null)
+            throw new IllegalStateException("name must not be null");
+
+        if (!name.equals("size"))
+            throw new IllegalStateException("no such field");
+
+        return new NumberValue(value.length());
+    }
+
+    @Override
     public String getString() {
         return value;
     }
