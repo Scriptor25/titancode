@@ -1,5 +1,7 @@
 package io.scriptor.ast;
 
+import java.util.Arrays;
+
 import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
@@ -18,28 +20,37 @@ public class GroupExpression extends Expression {
 
     @Override
     public String toString() {
+        if (expressions.length == 0)
+            return "()";
+
         if (expressions.length == 1)
             return String.format("(%s)", expressions[0]);
 
-        final var builder = new StringBuilder();
-        final var spaces = new StringBuilder();
-        for (int i = 0; i < depth; ++i)
-            spaces.append("  ");
+        final var builder = new StringBuilder()
+                .append("(");
+
         ++depth;
-        builder.append("(\n");
-        for (final var expression : expressions)
-            builder.append(spaces).append("  ").append(expression).append('\n');
-        builder.append(spaces).append(')');
+        var spaces = getSpaces();
+
+        for (final var expression : expressions) {
+            builder.append('\n').append(spaces).append(expression);
+        }
+
         --depth;
-        return builder.toString();
+        spaces = getSpaces();
+
+        return builder
+                .append('\n')
+                .append(spaces)
+                .append(')')
+                .toString();
     }
 
     @Override
     public boolean isConstant() {
-        for (final var expression : expressions)
-            if (!expression.isConstant())
-                return false;
-        return true;
+        return !Arrays
+                .stream(expressions)
+                .anyMatch(expression -> !expression.isConstant());
     }
 
     @Override

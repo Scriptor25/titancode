@@ -32,7 +32,9 @@ public class IfExpression extends Expression {
 
     @Override
     public boolean isConstant() {
-        return condition.isConstant() && branchTrue.isConstant() && (branchFalse == null || branchFalse.isConstant());
+        return condition.isConstant()
+                && branchTrue.isConstant()
+                && (branchFalse == null || branchFalse.isConstant());
     }
 
     @Override

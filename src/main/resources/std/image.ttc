@@ -1,0 +1,45 @@
+# Read Image #
+def imgRead(filename) = (
+
+)
+
+# Write Image #
+def imgWrite(filename, image) = (
+    fopen(filename, "wb")
+
+    fprintf(filename, "P6%n%.0f %.0f%n255%n", image.width, image.height)
+    for [0, image.width * image.height] -> i (
+        def c = image.pixels[i]
+        def r = (c >> 16) & 255
+        def g = (c >> 8) & 255
+        def b = c & 255
+        fprintf(filename, "%c%c%c", char(r), char(g), char(b))
+    )
+
+    fclose(filename)
+)
+
+# Create Image #
+def imgCreate(width, height) = {
+    width = width,
+    height = height,
+    pixels[width * height]
+}
+
+# Set Pixel #
+def imgSetPixel(image, x, y, color) = image.pixels[x + y * image.width] = color
+
+# Get Pixel #
+def imgGetPixel(image, x, y) = image.pixels[x + y * image.width]
+
+# Set Pixels #
+def imgSetPixels(image, pixels, x, y, width, height) =
+    for [y, y + height] -> j
+        for [x, x + width] -> i
+            image.pixels[i + j * image.width] = pixels[(i - x) + (j - y) * width]
+
+# Get Pixels #
+def imgGetPixels(image, pixels, x, y, width, height) = 
+    for [y, y + height] -> j
+        for [x, x + width] -> i
+            pixels[(i - x) + (j - y) * width] = image.pixels[i + j * image.width]

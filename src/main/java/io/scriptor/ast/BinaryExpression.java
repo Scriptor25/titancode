@@ -56,7 +56,7 @@ public class BinaryExpression extends Expression {
                 final var object = e.object.evaluate(env);
                 return object.putField(e.member, value);
             }
-            throw new IllegalStateException();
+            throw new RuntimeException();
         }
 
         final var left = lhs.evaluate(env);

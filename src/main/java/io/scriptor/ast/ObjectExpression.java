@@ -18,6 +18,41 @@ public class ObjectExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        if (fields.isEmpty())
+            return "{}";
+
+        final var builder = new StringBuilder()
+                .append("{");
+
+        ++depth;
+        var spaces = getSpaces();
+
+        boolean first = true;
+        for (final var field : fields.entrySet()) {
+            if (first)
+                first = false;
+            else
+                builder.append(',');
+            builder
+                    .append('\n')
+                    .append(spaces)
+                    .append(field.getKey())
+                    .append('=')
+                    .append(field.getValue());
+        }
+
+        --depth;
+        spaces = getSpaces();
+
+        return builder
+                .append('\n')
+                .append(spaces)
+                .append('}')
+                .toString();
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         final Map<String, Value> values = new HashMap<>();
         for (final var entry : fields.entrySet())

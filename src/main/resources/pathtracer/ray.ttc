@@ -1,0 +1,10 @@
+def ray() = {
+    origin = vec3(),
+    direction = vec3()
+}
+def ray(origin, direction) = {
+    origin = origin,
+    direction = direction
+}
+
+def ray_at(self, t) = vec3_add(self.origin, vec3_1mul(t, self.direction))

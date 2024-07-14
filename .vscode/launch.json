@@ -11,7 +11,7 @@
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
             "args": [
-                "src/main/resources/fib.ttc",
+                "src/main/resources/simple/fib.ttc",
                 "Hello",
                 "World",
                 "!"
@@ -24,7 +24,7 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": "src/main/resources/ghost.ttc",
+            "args": "src/main/resources/simple/ghost.ttc",
             "vmArgs": "-ea"
         },
         {
@@ -33,7 +33,7 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": "src/main/resources/donut.ttc",
+            "args": "src/main/resources/simple/donut.ttc",
             "vmArgs": "-ea"
         },
         {
@@ -42,7 +42,7 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": "src/main/resources/mandel.ttc",
+            "args": "src/main/resources/simple/mandel.ttc",
             "vmArgs": "-ea"
         },
         {
@@ -51,7 +51,16 @@
             "request": "launch",
             "mainClass": "io.scriptor.TitanCode",
             "projectName": "titancode",
-            "args": "src/main/resources/test.ttc",
+            "args": "src/main/resources/simple/test.ttc",
+            "vmArgs": "-ea"
+        },
+        {
+            "type": "java",
+            "name": "Pathtracer",
+            "request": "launch",
+            "mainClass": "io.scriptor.TitanCode",
+            "projectName": "titancode",
+            "args": "src/main/resources/pathtracer/main.ttc",
             "vmArgs": "-ea"
         }
     ]

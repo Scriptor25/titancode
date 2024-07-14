@@ -12,23 +12,23 @@ public class DefVariableExpression extends Expression {
 
     public final String name;
     public final Expression size;
-    public final Expression expression;
+    public final Expression init;
 
-    public DefVariableExpression(final RLocation location, final String name, final Expression expression) {
+    public DefVariableExpression(final RLocation location, final String name, final Expression init) {
         super(location);
 
         assert name != null;
 
         this.name = name;
         this.size = null;
-        this.expression = expression;
+        this.init = init;
     }
 
     public DefVariableExpression(
             final RLocation location,
             final String name,
             final Expression size,
-            final Expression expression) {
+            final Expression init) {
         super(location);
 
         assert name != null;
@@ -36,37 +36,35 @@ public class DefVariableExpression extends Expression {
 
         this.name = name;
         this.size = size;
-        this.expression = expression;
+        this.init = init;
     }
 
     @Override
     public String toString() {
         if (size != null)
-            return String.format("def %s[%s] = %s", name, size, expression);
-        return String.format("def %s = %s", name, expression);
+            return String.format("def %s[%s] = %s", name, size, init);
+        return String.format("def %s = %s", name, init);
     }
 
     @Override
     public Value evaluate(final Env env) {
         assert env != null;
 
-        final Value value;
-        if (expression != null) {
-            value = expression.evaluate(env);
-        } else {
-            value = new NumberValue(0);
-        }
-
         if (size != null) {
-            final var esize = size.evaluate(env).getInt();
-            final var values = new Value[esize];
-            Arrays.fill(values, value);
+            final var n = size.evaluate(env).getInt();
+            final var values = new Value[n];
+            if (init == null)
+                Arrays.fill(values, new NumberValue(0));
+            else
+                for (int i = 0; i < n; ++i)
+                    values[i] = init.evaluate(env);
             final var array = new ArrayValue(values);
             env.defineVariable(name, array);
-            return null;
+            return array;
         }
 
+        final var value = init == null ? new NumberValue(0) : init.evaluate(env);
         env.defineVariable(name, value);
-        return null;
+        return value;
     }
 }

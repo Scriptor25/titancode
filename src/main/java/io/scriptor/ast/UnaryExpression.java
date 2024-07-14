@@ -20,6 +20,11 @@ public class UnaryExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        return String.format("%s%s", operator, expression);
+    }
+
+    @Override
     public boolean isConstant() {
         return expression.isConstant();
     }

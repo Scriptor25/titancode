@@ -20,6 +20,11 @@ public class MemberExpression extends Expression {
     }
 
     @Override
+    public String toString() {
+        return String.format("%s.%s", object, member);
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         assert env != null;
 

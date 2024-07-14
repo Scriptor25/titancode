@@ -14,6 +14,9 @@ public abstract class Value {
         if (value instanceof Number n)
             return new NumberValue(n.doubleValue());
 
+        if (value instanceof Character c)
+            return new CharValue(c);
+
         if (value instanceof CharSequence cs)
             return new StringValue(cs.toString());
 
@@ -25,51 +28,51 @@ public abstract class Value {
     public abstract boolean getBoolean();
 
     public Value getAt(final int index) {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public Value setAt(final int index, final Value value) {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public Value getField(final String name) {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public Value putField(final String name, final Value value) {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public byte getByte() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public char getChar() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public short getShort() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public int getInt() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public long getLong() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public float getFloat() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public double getDouble() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public String getString() {
-        throw new IllegalStateException();
+        throw new UnsupportedOperationException();
     }
 
     public abstract Type getType();

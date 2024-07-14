@@ -25,14 +25,9 @@ public class NumberValue extends Value {
     @Override
     public Value getField(final String name) {
         assert name != null;
-
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
         return switch (name) {
             case "string" -> new StringValue(getString());
-
-            default -> throw new IllegalStateException("no such field");
+            default -> throw new RuntimeException("no such field");
         };
     }
 

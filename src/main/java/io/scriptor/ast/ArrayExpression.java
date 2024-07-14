@@ -13,11 +13,28 @@ public class ArrayExpression extends Expression {
 
     public ArrayExpression(final RLocation location, final Expression[] values) {
         super(location);
+
+        assert values != null;
+
         this.values = values;
     }
 
     @Override
+    public String toString() {
+        return Arrays.toString(values);
+    }
+
+    @Override
+    public boolean isConstant() {
+        return !Arrays
+                .stream(values)
+                .anyMatch(value -> !value.isConstant());
+    }
+
+    @Override
     public Value evaluate(final Env env) {
+        assert env != null;
+
         return new ArrayValue(
                 Arrays
                         .stream(values)

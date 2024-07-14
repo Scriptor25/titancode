@@ -17,8 +17,8 @@ public class Type {
 
     public static Type get(final String name) {
         assert name != null;
-        assert types.containsKey(name);
-
+        if (!types.containsKey(name))
+            throw new RuntimeException("no such type");
         return types.get(name);
     }
 
@@ -46,7 +46,6 @@ public class Type {
 
     private Type(final String name) {
         assert name != null;
-
         this.name = name;
         types.put(name, this);
     }

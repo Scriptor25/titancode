@@ -11,6 +11,7 @@ public class ConstExpression extends Expression {
         return expression;
     }
 
+    public final Expression expression;
     public final Value value;
 
     private ConstExpression(final Expression expression) {
@@ -19,12 +20,13 @@ public class ConstExpression extends Expression {
         assert expression != null;
         assert expression.isConstant();
 
+        this.expression = expression;
         this.value = expression.evaluate(new Env());
     }
 
     @Override
     public String toString() {
-        return value.toString();
+        return expression.toString();
     }
 
     @Override

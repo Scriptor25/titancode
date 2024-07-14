@@ -6,7 +6,6 @@ public class StringValue extends Value {
 
     public StringValue(final String value) {
         assert value != null;
-
         this.value = value;
     }
 
@@ -30,15 +29,10 @@ public class StringValue extends Value {
     @Override
     public Value getField(final String name) {
         assert name != null;
-        assert name.equals("size");
-
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
-        if (!name.equals("size"))
-            throw new IllegalStateException("no such field");
-
-        return new NumberValue(value.length());
+        return switch (name) {
+            case "size" -> new NumberValue(value.length());
+            default -> throw new RuntimeException("no such field");
+        };
     }
 
     @Override

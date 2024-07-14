@@ -27,20 +27,61 @@ import io.scriptor.ast.MemberExpression;
 import io.scriptor.ast.NativeExpression;
 import io.scriptor.ast.NumberExpression;
 import io.scriptor.ast.ObjectExpression;
-import io.scriptor.ast.RangeExpression;
+import io.scriptor.ast.SizedArrayExpression;
+import io.scriptor.ast.ForExpression;
 import io.scriptor.ast.StringExpression;
 import io.scriptor.ast.UnaryExpression;
-import io.scriptor.ast.VarargsExpression;
+import io.scriptor.ast.VarArgsExpression;
 import io.scriptor.ast.WhileExpression;
 import io.scriptor.runtime.Env;
 
 public class Parser implements AutoCloseable, Iterable<Expression> {
 
-    public static void parseFile(final File file, final Env env) throws IOException {
-        try (final var parser = new Parser(file, env)) {
-            for (final var expression : parser)
+    public static void parseFile(final File file, final List<File> parsed, final Env env) throws IOException {
+        if (parsed.contains(file))
+            return;
+        parsed.add(file);
+
+        try (final var parser = new Parser(file, parsed, env)) {
+            for (final var expression : parser) {
                 expression.evaluate(env);
+            }
         }
+    }
+
+    private static final Map<String, Integer> precedences = new HashMap<>();
+
+    static {
+        precedences.clear();
+        precedences.put("=", 0);
+        precedences.put("<<=", 0);
+        precedences.put(">>=", 0);
+        precedences.put(">>>=", 0);
+        precedences.put("+=", 0);
+        precedences.put("-=", 0);
+        precedences.put("*=", 0);
+        precedences.put("/=", 0);
+        precedences.put("%=", 0);
+        precedences.put("&=", 0);
+        precedences.put("|=", 0);
+        precedences.put("&&", 1);
+        precedences.put("||", 1);
+        precedences.put("<", 2);
+        precedences.put(">", 2);
+        precedences.put("<=", 2);
+        precedences.put(">=", 2);
+        precedences.put("==", 2);
+        precedences.put("&", 3);
+        precedences.put("|", 3);
+        precedences.put("^", 3);
+        precedences.put("<<", 4);
+        precedences.put(">>", 4);
+        precedences.put(">>>", 4);
+        precedences.put("+", 5);
+        precedences.put("-", 5);
+        precedences.put("*", 6);
+        precedences.put("/", 6);
+        precedences.put("%", 6);
     }
 
     private static boolean isDigit(final int chr) {
@@ -79,54 +120,27 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                         .replaceAll("\\$value", token.value())
                         .replaceAll("\\$type", token.type().toString())
                         .formatted(args));
-        return new IllegalStateException(message);
+        return new RuntimeException(message);
     }
 
     private final File file;
+    private final List<File> parsed;
     private final Env env;
+
     private final InputStream stream;
-    private final Map<String, Integer> precedences = new HashMap<>();
 
     private int chr = -1;
     private int row = 1;
     private int column = 0;
     private RToken token;
 
-    private Parser(final File file, final Env env) throws IOException {
+    private Parser(final File file, final List<File> parsed, final Env env) throws IOException {
         this.file = file;
+        this.parsed = parsed;
         this.env = env;
+
         this.stream = new FileInputStream(file);
         next();
-
-        precedences.put("=", 0);
-        precedences.put("<<=", 0);
-        precedences.put(">>=", 0);
-        precedences.put(">>>=", 0);
-        precedences.put("+=", 0);
-        precedences.put("-=", 0);
-        precedences.put("*=", 0);
-        precedences.put("/=", 0);
-        precedences.put("%=", 0);
-        precedences.put("&=", 0);
-        precedences.put("|=", 0);
-        precedences.put("&&", 1);
-        precedences.put("||", 1);
-        precedences.put("<", 2);
-        precedences.put(">", 2);
-        precedences.put("<=", 2);
-        precedences.put(">=", 2);
-        precedences.put("==", 2);
-        precedences.put("&", 3);
-        precedences.put("|", 3);
-        precedences.put("^", 3);
-        precedences.put("<<", 4);
-        precedences.put(">>", 4);
-        precedences.put(">>>", 4);
-        precedences.put("+", 5);
-        precedences.put("-", 5);
-        precedences.put("*", 6);
-        precedences.put("/", 6);
-        precedences.put("%", 6);
     }
 
     @Override
@@ -379,7 +393,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         if (!file.isAbsolute())
             file = new File(this.file.getParentFile(), filename);
 
-        parseFile(file, env);
+        parseFile(file.getCanonicalFile(), parsed, env);
     }
 
     private Expression parse() throws IOException {
@@ -474,7 +488,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return new NativeExpression(location, name, arglist.toArray(Expression[]::new));
     }
 
-    private RangeExpression parseFor() throws IOException {
+    private ForExpression parseFor() throws IOException {
         // for [<from>, <to>, <step>] -> <id> <expression>
 
         final var location = token.location();
@@ -505,7 +519,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
         final var expression = parse();
 
-        return new RangeExpression(location, from, to, step, id, expression);
+        return new ForExpression(location, from, to, step, id, expression);
     }
 
     private WhileExpression parseWhile() throws IOException {
@@ -570,7 +584,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             final var op = skip().value();
             final var opPrecedence = precedences.get(op);
             var rhs = parseCall();
-            while (at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) > opPrecedence) {
+            while (!atEOF() && at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) > opPrecedence) {
                 final var laPrecedence = precedences.get(token.value());
                 rhs = parseBinary(rhs, opPrecedence + (laPrecedence > opPrecedence ? 1 : 0));
             }
@@ -674,7 +688,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
         if (at("?")) {
             next();
-            return new VarargsExpression(location);
+            return new VarArgsExpression(location);
         }
 
         if (at("!")) {
@@ -694,9 +708,31 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             final Map<String, Expression> fields = new HashMap<>();
             while (!atEOF() && !at("}")) {
                 final var name = expect(TokenType.ID).value();
-                expect("=");
-                final var value = parse();
+
+                final Expression value;
+                if (at("[")) {
+                    final var loc = token.location();
+
+                    next();
+                    final var size = parse();
+                    expect("]");
+
+                    final Expression init;
+                    if (at("=")) {
+                        next();
+                        init = parse();
+                    } else {
+                        init = null;
+                    }
+
+                    value = new SizedArrayExpression(loc, size, init);
+                } else {
+                    expect("=");
+                    value = parse();
+                }
+
                 fields.put(name, value);
+
                 if (!at("}"))
                     expect(",");
             }

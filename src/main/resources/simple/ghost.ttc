@@ -1,4 +1,4 @@
-include "std.ttc"
+include "../std/std.ttc"
 
 def randomInt(min, max) = floor(min + (max + 1 - min) * random())
 

@@ -13,7 +13,6 @@ public class Function {
         assert name != null;
         assert args != null;
         assert expression != null;
-
         this.name = name;
         this.args = args;
         this.varargs = varargs;

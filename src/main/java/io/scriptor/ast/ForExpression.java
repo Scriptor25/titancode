@@ -4,7 +4,7 @@ import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
-public class RangeExpression extends Expression {
+public class ForExpression extends Expression {
 
     public final Expression from;
     public final Expression to;
@@ -12,7 +12,7 @@ public class RangeExpression extends Expression {
     public final String id;
     public final Expression expression;
 
-    public RangeExpression(
+    public ForExpression(
             final RLocation location,
             final Expression from,
             final Expression to,
@@ -34,7 +34,13 @@ public class RangeExpression extends Expression {
 
     @Override
     public String toString() {
-        return String.format("for [%s, %s, %s] -> %s %s", from, to, step, id, expression);
+        return String.format(
+                "for [%s, %s%s]%s %s",
+                from,
+                to,
+                step == null ? "" : ", " + step.toString(),
+                id == null ? "" : " -> " + id,
+                expression);
     }
 
     @Override

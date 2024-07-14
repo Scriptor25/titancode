@@ -1,0 +1,11 @@
+def color_int(self) = (
+    def r = self[0]
+    def g = self[1]
+    def b = self[2]
+
+    def ir = floor(255.999 * r)
+    def ig = floor(255.999 * g)
+    def ib = floor(255.999 * b)
+
+    (ir & 255) << 16 | (ig & 255) << 8 | (ib & 255)
+)

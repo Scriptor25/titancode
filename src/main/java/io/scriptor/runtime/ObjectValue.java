@@ -1,5 +1,6 @@
 package io.scriptor.runtime;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,17 +12,18 @@ public class ObjectValue extends Value {
     }
 
     public ObjectValue(final Map<String, Value> fields) {
+        assert fields != null;
         this.fields.putAll(fields);
     }
 
     public ObjectValue(final Object object) {
-        for (final var field : object.getClass().getFields())
-            if (field.canAccess(object))
-                try {
-                    fields.put(field.getName(), fromJava(field.get(object)));
-                } catch (IllegalArgumentException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+        assert object != null;
+        for (final var field : object.getClass().getDeclaredFields())
+            try {
+                fields.put(field.getName(), fromJava(field.get(object)));
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
     }
 
     @Override
@@ -30,6 +32,24 @@ public class ObjectValue extends Value {
         for (final var entry : fields.entrySet())
             object.put(entry.getKey(), entry.getValue().getValue());
         return object;
+    }
+
+    public <T> T getAs(final Class<T> clazz) {
+        assert clazz != null;
+        try {
+            final var object = clazz.getDeclaredConstructor().newInstance();
+            for (final var field : fields.entrySet())
+                clazz.getDeclaredField(field.getKey()).set(object, field.getValue().getValue());
+            return object;
+        } catch (InstantiationException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException
+                | NoSuchMethodException
+                | SecurityException
+                | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -41,13 +61,6 @@ public class ObjectValue extends Value {
     public Value getAt(final int index) {
         assert index >= 0;
         assert index < fields.size();
-
-        if (index < 0)
-            throw new IllegalStateException("index must be >= 0");
-
-        if (index >= fields.size())
-            throw new IllegalStateException("index must be < size");
-
         return fields.values().toArray(Value[]::new)[index];
     }
 
@@ -56,16 +69,6 @@ public class ObjectValue extends Value {
         assert index >= 0;
         assert index < fields.size();
         assert value != null;
-
-        if (index < 0)
-            throw new IllegalStateException("index must be >= 0");
-
-        if (index >= fields.size())
-            throw new IllegalStateException("index must be < size");
-
-        if (value == null)
-            throw new IllegalStateException("value must not be null");
-
         final var key = fields.keySet().toArray(String[]::new)[index];
         fields.put(key, value);
         return value;
@@ -74,11 +77,6 @@ public class ObjectValue extends Value {
     @Override
     public Value getField(final String name) {
         assert name != null;
-        assert name.equals("string") || fields.containsKey(name);
-
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
         switch (name) {
             case "string" -> {
                 return new StringValue(getString());
@@ -86,7 +84,7 @@ public class ObjectValue extends Value {
         }
 
         if (!fields.containsKey(name))
-            throw new IllegalStateException("no such field");
+            throw new RuntimeException("no such field");
 
         return fields.get(name);
     }
@@ -95,13 +93,6 @@ public class ObjectValue extends Value {
     public Value putField(final String name, final Value value) {
         assert name != null;
         assert value != null;
-
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
-        if (value == null)
-            throw new IllegalStateException("value must not be null");
-
         fields.put(name, value);
         return value;
     }

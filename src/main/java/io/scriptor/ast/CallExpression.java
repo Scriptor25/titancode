@@ -40,6 +40,7 @@ public class CallExpression extends Expression {
         final var eargs = new Value[args.length];
         for (int i = 0; i < args.length; ++i)
             eargs[i] = args[i].evaluate(env);
+
         return env.call(name, eargs);
     }
 }

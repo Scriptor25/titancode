@@ -6,12 +6,12 @@ public class ArrayValue extends Value {
 
     private final Value[] values;
 
-    public ArrayValue(final Value... values) {
+    public ArrayValue(final Value[] values) {
         assert values != null;
         this.values = values;
     }
 
-    public ArrayValue(final Object... values) {
+    public ArrayValue(final Object[] values) {
         this(Arrays
                 .stream(values)
                 .map(value -> Value.fromJava(value))
@@ -49,15 +49,10 @@ public class ArrayValue extends Value {
     @Override
     public Value getField(final String name) {
         assert name != null;
-
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
         return switch (name) {
             case "size" -> new NumberValue(values.length);
             case "string" -> new StringValue(getString());
-
-            default -> throw new IllegalStateException("no such field");
+            default -> throw new RuntimeException("no such field");
         };
     }
 

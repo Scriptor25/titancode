@@ -1,0 +1,23 @@
+def hit_record() = {
+    p = vec3(),
+    normal = vec3(),
+    t = 0,
+    front_face = 0
+}
+
+def set_face_normal(self, r, outward_normal) = (
+    self.front_face = vec3_dot(r.direction, outward_normal) < 0
+    self.normal = if [self.front_face] outward_normal else vec3_neg(outward_normal)
+)
+
+def hit_record_copy(self, rec) = (
+    self.p = rec.p
+    self.normal = rec.normal
+    self.t = rec.t
+    self.front_face = rec.front_face
+)
+
+def hittable_hit(self, r, ray_tmin, ray_tmax, rec) = 
+    if [self.type == 0] sphere_hit(self, r, ray_tmin, ray_tmax, rec)
+    else if [self.type == 1] hittable_list_hit(self, r, ray_tmin, ray_tmax, rec)
+    else 0

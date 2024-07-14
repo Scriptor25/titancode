@@ -1,0 +1,23 @@
+# IO #
+def putchar(c) = native("io.scriptor.TitanCode.putchar", c)
+def printf(format, ?) = native("io.scriptor.TitanCode.printf", format, ?)
+def readLine() = native("io.scriptor.TitanCode.readLine")
+def fopen(filename, flags) = native("io.scriptor.TitanCode.fopen", filename, flags)
+def fclose(filename) = native("io.scriptor.TitanCode.fclose", filename)
+def fread(filename) = native("io.scriptor.TitanCode.fread", filename)
+def fwrite(filename, x) = native("io.scriptor.TitanCode.fwrite", filename, x)
+def fprintf(filename, format, ?) = native("io.scriptor.TitanCode.fprintf", filename, format, ?)
+
+# MATH #
+def sin(x) = native("java.lang.Math.sin", x)
+def cos(x) = native("java.lang.Math.cos", x)
+def floor(x) = native("java.lang.Math.floor", x)
+def random() = native("java.lang.Math.random")
+def sqrt(x) = native("java.lang.Math.sqrt", x)
+
+# TIME #
+def millis() = native("java.lang.System.currentTimeMillis")
+
+# TYPES #
+def number(x) = native("io.scriptor.TitanCode.number", x)
+def char(x) = native("io.scriptor.TitanCode.character", x)

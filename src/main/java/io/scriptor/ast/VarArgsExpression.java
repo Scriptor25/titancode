@@ -4,9 +4,9 @@ import io.scriptor.parser.RLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
-public class VarargsExpression extends Expression {
+public class VarArgsExpression extends Expression {
 
-    public VarargsExpression(final RLocation location) {
+    public VarArgsExpression(final RLocation location) {
         super(location);
     }
 
@@ -19,6 +19,6 @@ public class VarargsExpression extends Expression {
     public Value evaluate(final Env env) {
         assert env != null;
 
-        return env.getVarargs();
+        return env.getVarArgs();
     }
 }

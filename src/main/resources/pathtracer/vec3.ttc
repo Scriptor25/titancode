@@ -1,0 +1,45 @@
+include "../std/std.ttc"
+
+def vec3() = [0, 0, 0]
+def vec3(x, y, z) = [x, y, z]
+
+def vec3_x(self) = self[0]
+def vec3_y(self) = self[1]
+def vec3_z(self) = self[2]
+
+def vec3_neg(self) = vec3(-self[0], -self[1], -self[2])
+
+def vec3_adde(self, v) = (
+    self[0] += v[0]
+    self[1] += v[1]
+    self[2] += v[2]
+    self
+)
+
+def vec3_mule(self, t) = (
+    self[0] *= t
+    self[1] *= t
+    self[2] *= t
+    self
+)
+
+def vec3_dive(self, t) = vec3_mule(self, 1 / t)
+
+def vec3_length(self) = sqrt(vec3_length_squared(self))
+def vec3_length_squared(self) = self[0] * self[0] + self[1] * self[1] + self[2] * self[2]
+
+def vec3_add(l, r) = vec3(l[0] + r[0], l[1] + r[1], l[2] + r[2])
+def vec3_sub(l, r) = vec3(l[0] - r[0], l[1] - r[1], l[2] - r[2])
+def vec3_mul(l, r) = vec3(l[0] * r[0], l[1] * r[1], l[2] * r[2])
+def vec3_mul1(l, r) = vec3(l[0] * r, l[1] * r, l[2] * r)
+def vec3_1mul(l, r) = vec3_mul1(r, l)
+def vec3_div1(l, r) = vec3_mul1(l, 1 / r)
+
+def vec3_dot(l, r) = l[0] * r[0] + l[1] * r[1] + l[2] * r[2]
+def vec3_cross(l, r) = vec3(
+    l[1] * r[2] - l[2] * r[1],
+    l[2] * r[0] - l[0] * r[2],
+    l[0] * r[1] - l[1] * r[0]
+)
+
+def vec3_unit_vector(v) = vec3_div1(v, vec3_length(v))

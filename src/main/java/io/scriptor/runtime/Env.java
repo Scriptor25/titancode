@@ -9,8 +9,9 @@ public class Env {
 
     private final Env parent;
     private final Env global;
-    private final Map<String, Function> functions = new HashMap<>();
+    private final Map<String, Map<Integer, Function>> functions = new HashMap<>();
     private final Map<String, Variable> variables = new HashMap<>();
+
     private Value[] varargs;
 
     public Env() {
@@ -20,10 +21,6 @@ public class Env {
 
     public Env(final Env parent) {
         assert parent != null;
-
-        if (parent == null)
-            throw new IllegalStateException("parent must not be null");
-
         this.parent = parent;
         this.global = parent.global;
     }
@@ -48,53 +45,41 @@ public class Env {
         assert name != null;
         assert args != null;
         assert expression != null;
-        assert !functions.containsKey(name);
 
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
+        if (functions.containsKey(name) && functions.get(name).containsKey(args.length))
+            throw new RuntimeException("function does already exist");
 
-        if (args == null)
-            throw new IllegalStateException("args must not be null");
-
-        if (expression == null)
-            throw new IllegalStateException("expression must not be null");
-
-        if (functions.containsKey(name))
-            throw new IllegalStateException("function does already exist");
-
-        functions.put(name, new Function(name, args, varargs, expression));
+        functions
+                .computeIfAbsent(name, key -> new HashMap<>())
+                .put(args.length, new Function(name, args, varargs, expression));
     }
 
-    public Function getFunction(final String name) {
+    public Function getFunction(final String name, final int args) {
         assert name != null;
 
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
-        if (functions.containsKey(name))
-            return functions.get(name);
-
-        assert hasParent();
+        if (functions.containsKey(name)) {
+            if (functions.get(name).containsKey(args))
+                return functions.get(name).get(args);
+            for (final var entry : functions.get(name).entrySet()) {
+                final var function = entry.getValue();
+                if (args < function.args.length)
+                    continue;
+                if (args > function.args.length && !function.varargs)
+                    continue;
+                return function;
+            }
+        }
 
         if (!hasParent())
-            throw new IllegalStateException("no such function");
+            throw new RuntimeException("no such function");
 
-        return parent.getFunction(name);
+        return parent.getFunction(name, args);
     }
 
     public RBinaryOperator getBinaryOperator(final String operator, final Type lhs, final Type rhs) {
         assert operator != null;
         assert lhs != null;
         assert rhs != null;
-
-        if (operator == null)
-            throw new IllegalStateException("operator must not be null");
-
-        if (lhs == null)
-            throw new IllegalStateException("lhs must not be null");
-
-        if (rhs == null)
-            throw new IllegalStateException("rhs must not be null");
 
         switch (operator) {
             case "==" -> {
@@ -138,24 +123,53 @@ public class Env {
                                     operator.equals("%="));
                         }
 
+                        case "&", "&=" -> {
+                            return new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getLong() & r.getLong()),
+                                    operator.equals("&="));
+                        }
+                        case "|", "|=" -> {
+                            return new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getLong() | r.getLong()),
+                                    operator.equals("|="));
+                        }
+                        case "^", "^=" -> {
+                            return new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getLong() ^ r.getLong()),
+                                    operator.equals("^="));
+                        }
+
+                        case "<<", "<<=" -> {
+                            return new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getLong() << r.getLong()),
+                                    operator.equals("<<="));
+                        }
+                        case ">>", ">>=" -> {
+                            return new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getLong() >> r.getLong()),
+                                    operator.equals(">>="));
+                        }
+                        case ">>>", ">>>=" -> {
+                            return new RBinaryOperator(
+                                    (l, r) -> new NumberValue(l.getLong() >>> r.getLong()),
+                                    operator.equals(">>>="));
+                        }
+
                         case "<" -> {
                             return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() < r.getDouble()),
                                     false);
                         }
-
                         case ">" -> {
                             return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() > r.getDouble()),
                                     false);
                         }
-
                         case "<=" -> {
                             return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() <= r.getDouble()),
                                     false);
                         }
-
                         case ">=" -> {
                             return new RBinaryOperator(
                                     (l, r) -> new NumberValue(l.getDouble() >= r.getDouble()),
@@ -164,11 +178,7 @@ public class Env {
                     }
                 }
 
-                throw new IllegalStateException(String.format(
-                        "no such binary operator '%s %s %s'",
-                        lhs.name,
-                        operator,
-                        rhs.name));
+                throw new RuntimeException("no such binary operator");
             }
         }
     }
@@ -191,11 +201,7 @@ public class Env {
                     }
                 }
 
-                throw new IllegalStateException(
-                        String.format(
-                                "no such unary operator '%s%s'",
-                                operator,
-                                type.name));
+                throw new RuntimeException("no such unary operator");
             }
         }
     }
@@ -203,16 +209,9 @@ public class Env {
     public void defineVariable(final String name, final Value value) {
         assert name != null;
         assert value != null;
-        assert !variables.containsKey(name);
-
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
-        if (value == null)
-            throw new IllegalStateException("value must not be null");
 
         if (variables.containsKey(name))
-            throw new IllegalStateException("variable does already exist");
+            throw new RuntimeException("variable does already exist");
 
         variables.put(name, new Variable(name, value));
     }
@@ -220,16 +219,11 @@ public class Env {
     public Variable getVariable(final String name) {
         assert name != null;
 
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
         if (variables.containsKey(name))
             return variables.get(name);
 
-        assert hasParent();
-
         if (!hasParent())
-            throw new IllegalStateException("no such variable");
+            throw new RuntimeException("no such variable");
 
         return parent.getVariable(name);
     }
@@ -238,66 +232,41 @@ public class Env {
         assert name != null;
         assert value != null;
 
-        if (name == null)
-            throw new IllegalStateException("name must not be null");
-
-        if (value == null)
-            throw new IllegalStateException("value must not be null");
-
         final var variable = getVariable(name);
         variable.value = value;
         return variable;
     }
 
-    public Value getVarargs() {
+    public Value getVarArgs() {
         if (varargs == null) {
-            assert hasParent();
-
             if (!hasParent())
-                throw new IllegalStateException("no varargs in this environment");
+                throw new RuntimeException("no var args in this environment");
 
-            return parent.getVarargs();
+            return parent.getVarArgs();
         }
 
         return new ArrayValue(varargs);
-    }
-
-    public Value getVararg(final Value index) {
-        assert index != null;
-
-        if (varargs == null) {
-            assert hasParent();
-
-            if (!hasParent())
-                throw new IllegalStateException("no varargs in this environment");
-
-            return parent.getVararg(index);
-        }
-
-        final var idx = index.getInt();
-        return varargs[idx];
     }
 
     public Value call(final String name, final Value[] args) {
         assert name != null;
         assert args != null;
 
-        final var function = getFunction(name);
+        final var function = getFunction(name, args.length);
         final var env = new Env(global);
 
         assert args.length >= function.args.length;
+        assert function.varargs || args.length == function.args.length;
 
         if (args.length < function.args.length)
-            throw new IllegalStateException("not enough arguments");
+            throw new RuntimeException("not enough arguments");
+
+        if (!function.varargs && args.length > function.args.length)
+            throw new RuntimeException("too many arguments");
 
         int i = 0;
         for (; i < function.args.length; ++i)
             env.defineVariable(function.args[i], args[i]);
-
-        assert function.varargs || i >= args.length;
-
-        if (!function.varargs && i < args.length)
-            throw new IllegalStateException("too many arguments");
 
         final var f = i;
         env.varargs = new Value[args.length - f];
@@ -309,29 +278,30 @@ public class Env {
 
     @SuppressWarnings("unchecked")
     public <R> R call(final String name, final Object... args) {
-        final var function = getFunction(name);
+        assert name != null;
+        assert args != null;
+
+        final var function = getFunction(name, args.length);
         final var env = new Env(global);
 
         assert args.length >= function.args.length;
+        assert function.varargs || args.length == function.args.length;
 
         if (args.length < function.args.length)
-            throw new IllegalStateException("not enough arguments");
+            throw new RuntimeException("not enough arguments");
+
+        if (!function.varargs && args.length > function.args.length)
+            throw new RuntimeException("too many arguments");
 
         int i = 0;
         for (; i < function.args.length; ++i)
             env.defineVariable(function.args[i], Value.fromJava(args[i]));
-
-        assert function.varargs || i >= args.length;
-
-        if (!function.varargs && i < args.length)
-            throw new IllegalStateException("too many arguments");
 
         final var f = i;
         env.varargs = new Value[args.length - f];
         for (; i < args.length; ++i)
             env.varargs[i - f] = Value.fromJava(args[i]);
 
-        final var result = function.expression.evaluate(env);
-        return (R) result.getValue();
+        return (R) function.expression.evaluate(env).getValue();
     }
 }
