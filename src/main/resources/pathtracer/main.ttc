@@ -1,11 +1,12 @@
 include "../std/image.ttc"
 include "../std/std.ttc"
-include "vec3.ttc"
+
 include "color.ttc"
-include "ray.ttc"
-include "hittable_list.ttc"
-include "sphere.ttc"
 include "hittable.ttc"
+include "hittable_list.ttc"
+include "ray.ttc"
+include "sphere.ttc"
+include "vec3.ttc"
 
 def infinity = 1 / 0
 def pi = 3.1415926535897932385

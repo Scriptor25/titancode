@@ -1,3 +1,5 @@
+include "vec3.ttc"
+
 def hit_record() = {
     p = vec3(),
     normal = vec3(),

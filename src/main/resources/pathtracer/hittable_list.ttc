@@ -1,3 +1,5 @@
+include "hittable.ttc"
+
 def hittable_list() = {
     type = 1,
     objects[0]
