@@ -32,6 +32,11 @@ public class ObjectValue extends Value {
             }
     }
 
+    public void copy(final ObjectValue other) {
+        this.fields.clear();
+        this.fields.putAll(other.fields);
+    }
+
     @Override
     public Map<String, Object> getValue() {
         final Map<String, Object> object = new HashMap<>();

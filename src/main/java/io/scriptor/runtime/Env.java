@@ -272,7 +272,11 @@ public class Env {
         assert value != null;
 
         final var variable = getVariable(location, name);
-        variable.value = value;
+        if (variable.value instanceof ObjectValue a
+                && value instanceof ObjectValue b)
+            a.copy(b);
+        else
+            variable.value = value;
         return variable;
     }
 
