@@ -16,6 +16,7 @@ public class Type {
         new Type("array");
         new Type("char");
         new Type("object");
+        new Type("function");
     }
 
     public static Type get(final SourceLocation location, final String name) {
@@ -43,6 +44,10 @@ public class Type {
 
     public static Type getObject(final SourceLocation location) {
         return get(location, "object");
+    }
+
+    public static Type getFunction(final SourceLocation location) {
+        return get(location, "function");
     }
 
     public final String name;

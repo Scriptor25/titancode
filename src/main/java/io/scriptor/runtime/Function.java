@@ -11,7 +11,7 @@ public class Function implements IFunction {
     public final Name name;
     public final String[] argNames;
     public final boolean hasVarArgs;
-    public final Expression body;
+    public Expression body;
 
     public Function(
             final SourceLocation location,
@@ -22,7 +22,6 @@ public class Function implements IFunction {
         assert location != null;
         assert name != null;
         assert argNames != null;
-        assert body != null;
 
         this.location = location;
         this.name = name;
@@ -52,7 +51,14 @@ public class Function implements IFunction {
     }
 
     @Override
+    public boolean isComplete() {
+        return body != null;
+    }
+
+    @Override
     public Value call(final Env parent, final Value... args) {
+        assert isComplete();
+
         if (args.length < argNames.length)
             throw new TitanException(
                     location,

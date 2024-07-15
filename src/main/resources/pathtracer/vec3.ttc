@@ -26,8 +26,8 @@ def mule(self, t) = (
 
 def dive(self, t) = vec3:mule(self, 1 / t)
 
-def length(self) = sqrt(vec3:length_squared(self))
 def length_squared(self) = self[0] * self[0] + self[1] * self[1] + self[2] * self[2]
+def length(self) = sqrt(vec3:length_squared(self))
 
 def add(l, r) = vec3:new(l[0] + r[0], l[1] + r[1], l[2] + r[2])
 def sub(l, r) = vec3:new(l[0] - r[0], l[1] - r[1], l[2] - r[2])

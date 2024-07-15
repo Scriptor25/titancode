@@ -2,27 +2,34 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.FunctionValue;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class CallExpression extends Expression {
 
-    public final Expression callee;
+    public final FunctionValue callee;
     public final Expression[] args;
 
-    public CallExpression(final SourceLocation location, final Expression callee, final Expression[] args) {
+    public CallExpression(
+            final SourceLocation location,
+            final Expression callee,
+            final Expression[] args) {
         super(location);
 
         assert callee != null;
         assert args != null;
 
-        this.callee = callee;
+        final var name = ((IDExpression) callee).name;
+        this.callee = Env.getFunction(location, name, args.length);
+
         this.args = args;
     }
 
     @Override
     public String toString() {
         final var builder = new StringBuilder();
-        builder.append(callee).append('(');
+        builder.append(callee.getValue().name()).append('(');
         for (int i = 0; i < args.length; ++i) {
             if (i > 0)
                 builder.append(", ");
@@ -33,14 +40,20 @@ public class CallExpression extends Expression {
     }
 
     @Override
+    public Type getType() {
+        return null; // TODO
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         assert env != null;
 
-        final var name = ((IDExpression) callee).name;
-        final var eargs = new Value[args.length];
+        final var args = new Value[this.args.length];
         for (int i = 0; i < args.length; ++i)
-            eargs[i] = args[i].evaluate(env);
+            args[i] = this.args[i].evaluate(env);
 
-        return env.call(location, name, eargs);
+        return callee
+                .getValue()
+                .call(env.getGlobal(), args);
     }
 }

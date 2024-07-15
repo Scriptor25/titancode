@@ -3,6 +3,7 @@ package io.scriptor.ast;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.StringValue;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class StringExpression extends Expression {
@@ -27,6 +28,11 @@ public class StringExpression extends Expression {
     @Override
     public boolean isConstant() {
         return true;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.getString(location);
     }
 
     @Override

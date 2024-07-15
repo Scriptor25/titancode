@@ -1,12 +1,16 @@
+include "interval.ttc"
+
 :color
+def intensity = interval:new(0.000, 0.999)
+
 def int(self) = (
     def r = self[0]
     def g = self[1]
     def b = self[2]
 
-    def ir = floor(255.999 * r)
-    def ig = floor(255.999 * g)
-    def ib = floor(255.999 * b)
+    def ir = floor(256 * interval:clamp(color:intensity, r))
+    def ig = floor(256 * interval:clamp(color:intensity, g))
+    def ib = floor(256 * interval:clamp(color:intensity, b))
 
     (ir & 255) << 16 | (ig & 255) << 8 | (ib & 255)
 )

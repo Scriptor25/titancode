@@ -13,5 +13,7 @@ public interface IFunction {
 
     boolean hasVarArgs();
 
+    boolean isComplete();
+
     Value call(final Env parent, final Value... args);
 }

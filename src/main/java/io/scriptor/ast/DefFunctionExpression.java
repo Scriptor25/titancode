@@ -6,6 +6,7 @@ import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Function;
 import io.scriptor.runtime.IFunction;
 import io.scriptor.runtime.NativeFunction;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class DefFunctionExpression extends Expression {
@@ -29,7 +30,6 @@ public class DefFunctionExpression extends Expression {
 
         assert name != null;
         assert argNames != null;
-        assert nativeName != null || body != null;
 
         this.nativeName = nativeName;
         this.name = name;
@@ -62,10 +62,12 @@ public class DefFunctionExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
-        assert env != null;
+    public Type getType() {
+        return Type.getFunction(location);
+    }
 
-        env.defineFunction(function);
-        return null;
+    @Override
+    public Value evaluate(final Env env) {
+        return Env.defineFunction(function);
     }
 }

@@ -1,6 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class ConstExpression extends Expression {
@@ -32,6 +33,11 @@ public class ConstExpression extends Expression {
     @Override
     public boolean isConstant() {
         return true;
+    }
+
+    @Override
+    public Type getType() {
+        return value.getType(location);
     }
 
     @Override

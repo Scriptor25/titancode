@@ -6,6 +6,7 @@ import java.util.Map;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.ObjectValue;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class ObjectExpression extends Expression {
@@ -50,6 +51,11 @@ public class ObjectExpression extends Expression {
                 .append(spaces)
                 .append('}')
                 .toString();
+    }
+
+    @Override
+    public Type getType() {
+        return Type.getObject(location);
     }
 
     @Override

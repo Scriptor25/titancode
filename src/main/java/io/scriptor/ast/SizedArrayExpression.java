@@ -6,6 +6,7 @@ import io.scriptor.SourceLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.NumberValue;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class SizedArrayExpression extends Expression {
@@ -20,6 +21,11 @@ public class SizedArrayExpression extends Expression {
 
         this.size = size;
         this.init = init;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.getArray(location);
     }
 
     @Override

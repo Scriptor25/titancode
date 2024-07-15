@@ -14,9 +14,12 @@ def set_face_normal(self, r, outward_normal) = (
 )
 :hit_record
 
+def sphere:hit(self, r, ray_t, rec)
+def hittable_list:hit(self, r, ray_t, rec)
+
 :hittable
-def hit(self, r, ray_tmin, ray_tmax, rec) = 
-    if [self.type == 0] sphere:hit(self, r, ray_tmin, ray_tmax, rec)
-    else if [self.type == 1] hittable_list:hit(self, r, ray_tmin, ray_tmax, rec)
+def hit(self, r, ray_t, rec) = 
+    if [self.type == 0] sphere:hit(self, r, ray_t, rec)
+    else if [self.type == 1] hittable_list:hit(self, r, ray_t, rec)
     else 0
 :hittable

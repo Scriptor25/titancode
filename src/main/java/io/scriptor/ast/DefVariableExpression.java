@@ -7,6 +7,7 @@ import io.scriptor.SourceLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.NumberValue;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class DefVariableExpression extends Expression {
@@ -53,6 +54,13 @@ public class DefVariableExpression extends Expression {
         if (size != null)
             return String.format("def %s[%s] = %s", name, size, init);
         return String.format("def %s = %s", name, init);
+    }
+
+    @Override
+    public Type getType() {
+        if (size == null)
+            return init.getType();
+        return Type.getArray(location);
     }
 
     @Override

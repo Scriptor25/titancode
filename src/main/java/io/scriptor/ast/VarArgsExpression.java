@@ -2,6 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class VarArgsExpression extends Expression {
@@ -13,6 +14,11 @@ public class VarArgsExpression extends Expression {
     @Override
     public String toString() {
         return "?";
+    }
+
+    @Override
+    public Type getType() {
+        return Type.getArray(location);
     }
 
     @Override

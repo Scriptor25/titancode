@@ -1,7 +1,9 @@
+include "vec3.ttc"
+
 :ray
 def new() = {
-    origin = vec3(),
-    direction = vec3()
+    origin = vec3:new(),
+    direction = vec3:new()
 }
 
 def new(origin, direction) = {

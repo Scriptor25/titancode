@@ -84,6 +84,11 @@ public class NativeFunction implements IFunction {
     }
 
     @Override
+    public boolean isComplete() {
+        return true;
+    }
+
+    @Override
     public Value call(final Env parent, final Value... args) {
         try {
             final var params = method.getParameterTypes();

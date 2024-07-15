@@ -3,6 +3,7 @@ package io.scriptor.ast;
 import io.scriptor.Name;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class ForExpression extends Expression {
@@ -47,6 +48,11 @@ public class ForExpression extends Expression {
     @Override
     public boolean isConstant() {
         return from.isConstant() && to.isConstant() && (step == null || step.isConstant()) && expression.isConstant();
+    }
+
+    @Override
+    public Type getType() {
+        return expression.getType();
     }
 
     @Override

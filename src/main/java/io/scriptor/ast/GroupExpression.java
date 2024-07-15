@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class GroupExpression extends Expression {
@@ -51,6 +52,11 @@ public class GroupExpression extends Expression {
         return !Arrays
                 .stream(expressions)
                 .anyMatch(expression -> !expression.isConstant());
+    }
+
+    @Override
+    public Type getType() {
+        return expressions[expressions.length - 1].getType();
     }
 
     @Override

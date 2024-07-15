@@ -3,6 +3,7 @@ package io.scriptor.ast;
 import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class BinaryExpression extends Expression {
@@ -38,6 +39,11 @@ public class BinaryExpression extends Expression {
     }
 
     @Override
+    public Type getType() {
+        return Env.getBinaryOperator(location, operator, lhs.getType(), rhs.getType()).result();
+    }
+
+    @Override
     public Value evaluate(final Env env) {
         assert env != null;
 
@@ -62,13 +68,25 @@ public class BinaryExpression extends Expression {
 
         final var left = lhs.evaluate(env);
         final var right = rhs.evaluate(env);
-        final var op = env.getBinaryOperator(location, operator, left.getType(location), right.getType(location));
+        final var op = Env.getBinaryOperator(location, operator, left.getType(location), right.getType(location));
         final var value = op.operator().evaluate(left, right);
 
         if (op.reassign()) {
-            final var name = ((IDExpression) lhs).name;
-            final var variable = env.setVariable(location, name, value);
-            return variable.value;
+            if (lhs instanceof IDExpression e) {
+                final var name = e.name;
+                final var variable = env.setVariable(location, name, value);
+                return variable.value;
+            }
+            if (lhs instanceof IndexExpression e) {
+                final var index = e.index.evaluate(env).getInt();
+                final var array = e.expression.evaluate(env);
+                return array.setAt(index, value);
+            }
+            if (lhs instanceof MemberExpression e) {
+                final var object = e.object.evaluate(env);
+                return object.putField(e.member, value);
+            }
+            throw new TitanException(location, "cannot assign to '%s'", lhs);
         }
 
         return value;

@@ -434,6 +434,26 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             namespace.pop();
     }
 
+    private Name parseName(final boolean inherit) throws IOException {
+        final var builder = new StringBuilder();
+        builder.append(expect(TokenType.ID).value());
+
+        if (!at(":")) {
+            final Namespace namespace;
+            if (inherit)
+                namespace = getNamespace();
+            else
+                namespace = new Namespace();
+            return Name.get(namespace, builder.toString());
+        }
+
+        while (at(":")) {
+            next();
+            builder.append(':').append(expect(TokenType.ID).value());
+        }
+        return Name.get(builder.toString());
+    }
+
     private Expression parse() throws IOException {
         if (at("def"))
             return parseDef();
@@ -459,9 +479,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             nativeName = null;
         }
 
-        final var id = expect(TokenType.ID).value();
-        final var namespace = getNamespace();
-        final var name = Name.get(namespace, id);
+        final var name = parseName(!inFunction);
 
         if (at("(")) {
             // def <name>(<arg>..., ?) = <expression>
@@ -710,13 +728,8 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return parseIf();
 
         if (at(TokenType.ID)) {
-            final var ns = new Stack<String>();
-            ns.push(skip().value());
-            while (at(":")) {
-                next();
-                ns.push(expect(TokenType.ID).value());
-            }
-            return new IDExpression(location, ns.toArray(String[]::new));
+            final var name = parseName(false);
+            return new IDExpression(location, name);
         }
 
         if (at(TokenType.NUMBER)) {

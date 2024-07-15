@@ -2,6 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class MemberExpression extends Expression {
@@ -22,6 +23,11 @@ public class MemberExpression extends Expression {
     @Override
     public String toString() {
         return String.format("%s.%s", object, member);
+    }
+
+    @Override
+    public Type getType() {
+        return null; // TODO
     }
 
     @Override

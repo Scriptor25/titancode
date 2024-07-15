@@ -3,6 +3,7 @@ package io.scriptor.ast;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.CharValue;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class CharExpression extends Expression {
@@ -25,6 +26,11 @@ public class CharExpression extends Expression {
     @Override
     public boolean isConstant() {
         return true;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.getChar(location);
     }
 
     @Override

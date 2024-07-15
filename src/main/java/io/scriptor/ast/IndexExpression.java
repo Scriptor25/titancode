@@ -2,6 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class IndexExpression extends Expression {
@@ -27,6 +28,11 @@ public class IndexExpression extends Expression {
     @Override
     public boolean isConstant() {
         return expression.isConstant() && index.isConstant();
+    }
+
+    @Override
+    public Type getType() {
+        return null; // TODO
     }
 
     @Override

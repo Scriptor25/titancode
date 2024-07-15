@@ -3,6 +3,7 @@ package io.scriptor.ast;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.NumberValue;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class NumberExpression extends Expression {
@@ -25,6 +26,11 @@ public class NumberExpression extends Expression {
     @Override
     public boolean isConstant() {
         return true;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.getNumber(location);
     }
 
     @Override

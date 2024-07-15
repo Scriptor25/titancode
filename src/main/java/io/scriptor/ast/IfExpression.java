@@ -2,6 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class IfExpression extends Expression {
@@ -35,6 +36,11 @@ public class IfExpression extends Expression {
         return condition.isConstant()
                 && branchTrue.isConstant()
                 && (branchFalse == null || branchFalse.isConstant());
+    }
+
+    @Override
+    public Type getType() {
+        return null; // TODO
     }
 
     @Override
