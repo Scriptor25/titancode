@@ -2,7 +2,7 @@ package io.scriptor.ast;
 
 import java.util.Arrays;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
@@ -11,7 +11,7 @@ public class ArrayExpression extends Expression {
 
     public final Expression[] values;
 
-    public ArrayExpression(final RLocation location, final Expression[] values) {
+    public ArrayExpression(final SourceLocation location, final Expression[] values) {
         super(location);
 
         assert values != null;
@@ -35,10 +35,9 @@ public class ArrayExpression extends Expression {
     public Value evaluate(final Env env) {
         assert env != null;
 
-        return new ArrayValue(
-                Arrays
-                        .stream(values)
-                        .map(value -> value.evaluate(env))
-                        .toArray(Value[]::new));
+        return new ArrayValue(location, Arrays
+                .stream(values)
+                .map(value -> value.evaluate(env))
+                .toArray(Value[]::new));
     }
 }

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
+import io.scriptor.TitanException;
 import io.scriptor.ast.ArrayExpression;
 import io.scriptor.ast.BinaryExpression;
 import io.scriptor.ast.CallExpression;
@@ -19,16 +20,15 @@ import io.scriptor.ast.ConstExpression;
 import io.scriptor.ast.DefFunctionExpression;
 import io.scriptor.ast.DefVariableExpression;
 import io.scriptor.ast.Expression;
+import io.scriptor.ast.ForExpression;
 import io.scriptor.ast.GroupExpression;
 import io.scriptor.ast.IDExpression;
 import io.scriptor.ast.IfExpression;
 import io.scriptor.ast.IndexExpression;
 import io.scriptor.ast.MemberExpression;
-import io.scriptor.ast.NativeExpression;
 import io.scriptor.ast.NumberExpression;
 import io.scriptor.ast.ObjectExpression;
 import io.scriptor.ast.SizedArrayExpression;
-import io.scriptor.ast.ForExpression;
 import io.scriptor.ast.StringExpression;
 import io.scriptor.ast.UnaryExpression;
 import io.scriptor.ast.VarArgsExpression;
@@ -42,11 +42,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return;
         parsed.add(file);
 
-        try (final var parser = new Parser(file, parsed, env)) {
-            for (final var expression : parser) {
-                expression.evaluate(env);
-            }
+        final var parser = new Parser(file, parsed, env);
+        for (final var expression : parser) {
+            expression.evaluate(env);
         }
+        parser.close();
     }
 
     private static final Map<String, Integer> precedences = new HashMap<>();
@@ -112,15 +112,6 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                 || chr == '='
                 || chr == '<'
                 || chr == '>';
-    }
-
-    private static RuntimeException error(final RToken token, final String format, final Object... args) {
-        final var message = "%s: %s%n"
-                .formatted(token.location(), format
-                        .replaceAll("\\$value", token.value())
-                        .replaceAll("\\$type", token.type().toString())
-                        .formatted(args));
-        return new RuntimeException(message);
     }
 
     private final File file;
@@ -233,7 +224,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
         var mode = ParserMode.NORMAL;
         var value = new String();
-        RLocation loc = null;
+        SourceLocation loc = null;
 
         while (chr >= 0) {
             switch (mode) {
@@ -244,12 +235,12 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                             break;
 
                         case '"':
-                            loc = new RLocation(file, row, column);
+                            loc = new SourceLocation(file, row, column);
                             mode = ParserMode.STRING;
                             break;
 
                         case '\'':
-                            loc = new RLocation(file, row, column);
+                            loc = new SourceLocation(file, row, column);
                             mode = ParserMode.CHAR;
                             break;
 
@@ -261,27 +252,27 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                             }
 
                             if (isDigit(chr)) {
-                                loc = new RLocation(file, row, column);
+                                loc = new SourceLocation(file, row, column);
                                 mode = ParserMode.NUMBER;
                                 value += (char) chr;
                                 break;
                             }
 
                             if (isID(chr)) {
-                                loc = new RLocation(file, row, column);
+                                loc = new SourceLocation(file, row, column);
                                 mode = ParserMode.ID;
                                 value += (char) chr;
                                 break;
                             }
 
                             if (isOp(chr)) {
-                                loc = new RLocation(file, row, column);
+                                loc = new SourceLocation(file, row, column);
                                 mode = ParserMode.BINARY_OPERATOR;
                                 value += (char) chr;
                                 break;
                             }
 
-                            loc = new RLocation(file, row, column);
+                            loc = new SourceLocation(file, row, column);
                             value += (char) chr;
                             chr = get();
                             return token = new RToken(loc, TokenType.OTHER, value);
@@ -366,7 +357,12 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         if (at(type))
             return skip();
 
-        throw error(token, "unexpected token '$value' ($type), expected %s", type);
+        throw new TitanException(
+                token.location(),
+                "unexpected token '%s' (%s), expected %s",
+                token.value(),
+                token.type(),
+                type);
     }
 
     private void expect(final String value) throws IOException {
@@ -375,7 +371,12 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return;
         }
 
-        throw error(token, "unexpected token '$value' ($type), expected '%s'", value);
+        throw new TitanException(
+                token.location(),
+                "unexpected token '%s' (%s), expected '%s'",
+                token.value(),
+                token.type(),
+                value);
     }
 
     private RToken skip() throws IOException {
@@ -410,36 +411,58 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         final var location = token.location();
 
         expect("def");
+
+        final String nativeName;
+        if (at("native")) {
+            next();
+            expect("(");
+            nativeName = expect(TokenType.STRING).value();
+            expect(")");
+        } else {
+            nativeName = null;
+        }
+
         final var name = expect(TokenType.ID).value();
 
-        if (at("(")) {
+        if (!atEOF() && at("(")) {
             // def <name>(<arg>..., ?) = <expression>
 
             next();
 
-            final List<String> arglist = new Vector<>();
-            boolean varargs = false;
+            final List<String> argNames = new Vector<>();
+            boolean hasVarArgs = false;
             while (!at(")")) {
                 if (at("?")) {
                     next();
-                    varargs = true;
+                    hasVarArgs = true;
                     break;
                 }
 
-                arglist.add(expect(TokenType.ID).value());
+                argNames.add(expect(TokenType.ID).value());
 
                 if (!at(")"))
                     expect(",");
             }
             expect(")");
 
-            expect("=");
-            final var expression = parse();
+            final Expression body;
+            if (!atEOF() && at("=")) {
+                next();
+                body = parse();
+            } else {
+                body = null;
+            }
 
-            return new DefFunctionExpression(location, name, arglist.toArray(String[]::new), varargs, expression);
+            return new DefFunctionExpression(
+                    location,
+                    nativeName,
+                    name,
+                    argNames.toArray(String[]::new),
+                    hasVarArgs,
+                    body);
         }
 
-        if (at("[")) {
+        if (!atEOF() && at("[")) {
             // def <name>[<size>] = <expression>
 
             next();
@@ -454,38 +477,20 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                 expression = null;
             }
 
-            return new DefVariableExpression(location, name, size, expression);
+            return new DefVariableExpression(location, nativeName, name, size, expression);
         }
 
         // def <name> = <expression>
 
         final Expression expression;
-        if (at("=")) {
+        if (!atEOF() && at("=")) {
             next();
             expression = parse();
         } else {
             expression = null;
         }
 
-        return new DefVariableExpression(location, name, expression);
-    }
-
-    private NativeExpression parseNative() throws IOException {
-        // native("<name>", <args>...)
-
-        final var location = token.location();
-
-        expect("native");
-        expect("(");
-        final var name = expect(TokenType.STRING).value();
-        final List<Expression> arglist = new Vector<>();
-        while (at(",")) {
-            next();
-            arglist.add(parse());
-        }
-        expect(")");
-
-        return new NativeExpression(location, name, arglist.toArray(Expression[]::new));
+        return new DefVariableExpression(location, nativeName, name, expression);
     }
 
     private ForExpression parseFor() throws IOException {
@@ -651,9 +656,6 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
         final var location = token.location();
 
-        if (at("native"))
-            return parseNative();
-
         if (at("for"))
             return parseFor();
 
@@ -752,6 +754,10 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return new ArrayExpression(location, values.toArray(Expression[]::new));
         }
 
-        throw error(token, "unhandled token '$value' ($type)");
+        throw new TitanException(
+                location,
+                "unhandled token '%s' (%s)",
+                token.value(),
+                token.type());
     }
 }

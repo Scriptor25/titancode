@@ -1,6 +1,6 @@
 package io.scriptor.parser;
 
-public record RToken(RLocation location, TokenType type, String value) {
+public record RToken(SourceLocation location, TokenType type, String value) {
 
     @Override
     public String toString() {

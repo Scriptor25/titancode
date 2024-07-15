@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -11,7 +11,7 @@ public class IfExpression extends Expression {
     public final Expression branchFalse;
 
     public IfExpression(
-            final RLocation location,
+            final SourceLocation location,
             final Expression condition,
             final Expression branchTrue,
             final Expression branchFalse) {

@@ -1,33 +1,43 @@
 package io.scriptor.runtime;
 
+import io.scriptor.parser.SourceLocation;
+
 public abstract class Value {
 
-    public static Value fromJava(final Object value) {
+    public static Value fromJava(final SourceLocation location, final Object value) {
+        assert location != null;
         assert value != null;
 
         if (value instanceof Void)
             return null;
 
         if (value instanceof Object[] array)
-            return new ArrayValue(array);
+            return new ArrayValue(location, array);
 
         if (value instanceof Number n)
-            return new NumberValue(n.doubleValue());
+            return new NumberValue(location, n.doubleValue());
 
         if (value instanceof Character c)
-            return new CharValue(c);
+            return new CharValue(location, c);
 
         if (value instanceof CharSequence cs)
-            return new StringValue(cs.toString());
+            return new StringValue(location, cs.toString());
 
-        return new ObjectValue(value);
+        return new ObjectValue(location, value);
+    }
+
+    public final SourceLocation location;
+
+    public Value(final SourceLocation location) {
+        assert location != null;
+        this.location = location;
     }
 
     public abstract Object getValue();
 
     public abstract boolean getBoolean();
 
-    public Value getAt(final int index) {
+    public Value getAt(final SourceLocation location, final int index) {
         throw new UnsupportedOperationException();
     }
 
@@ -35,7 +45,7 @@ public abstract class Value {
         throw new UnsupportedOperationException();
     }
 
-    public Value getField(final String name) {
+    public Value getField(final SourceLocation location, final String name) {
         throw new UnsupportedOperationException();
     }
 
@@ -75,7 +85,7 @@ public abstract class Value {
         throw new UnsupportedOperationException();
     }
 
-    public abstract Type getType();
+    public abstract Type getType(final SourceLocation location);
 
     @Override
     public String toString() {

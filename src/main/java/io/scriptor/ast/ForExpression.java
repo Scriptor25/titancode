@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -13,7 +13,7 @@ public class ForExpression extends Expression {
     public final Expression expression;
 
     public ForExpression(
-            final RLocation location,
+            final SourceLocation location,
             final Expression from,
             final Expression to,
             final Expression step,
@@ -60,7 +60,7 @@ public class ForExpression extends Expression {
         for (double i = efrom; i < eto; i += estep) {
             final var env1 = new Env(env);
             if (id != null)
-                env1.defineVariable(id, Value.fromJava(i));
+                env1.defineVariable(location, id, Value.fromJava(location, i));
             result = expression.evaluate(env1);
         }
 

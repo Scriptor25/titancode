@@ -3,6 +3,9 @@ package io.scriptor.runtime;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.scriptor.TitanException;
+import io.scriptor.parser.SourceLocation;
+
 public class Type {
 
     private static final Map<String, Type> types = new HashMap<>();
@@ -15,31 +18,31 @@ public class Type {
         new Type("object");
     }
 
-    public static Type get(final String name) {
+    public static Type get(final SourceLocation location, final String name) {
         assert name != null;
         if (!types.containsKey(name))
-            throw new RuntimeException("no such type");
+            throw new TitanException(location, "no such type: %s", name);
         return types.get(name);
     }
 
-    public static Type getNumber() {
-        return get("number");
+    public static Type getNumber(final SourceLocation location) {
+        return get(location, "number");
     }
 
-    public static Type getString() {
-        return get("string");
+    public static Type getString(final SourceLocation location) {
+        return get(location, "string");
     }
 
-    public static Type getArray() {
-        return get("array");
+    public static Type getArray(final SourceLocation location) {
+        return get(location, "array");
     }
 
-    public static Type getChar() {
-        return get("char");
+    public static Type getChar(final SourceLocation location) {
+        return get(location, "char");
     }
 
-    public static Type getObject() {
-        return get("object");
+    public static Type getObject(final SourceLocation location) {
+        return get(location, "object");
     }
 
     public final String name;

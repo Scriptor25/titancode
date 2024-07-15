@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -9,7 +9,7 @@ public class CallExpression extends Expression {
     public final Expression callee;
     public final Expression[] args;
 
-    public CallExpression(final RLocation location, final Expression callee, final Expression[] args) {
+    public CallExpression(final SourceLocation location, final Expression callee, final Expression[] args) {
         super(location);
 
         assert callee != null;
@@ -41,6 +41,6 @@ public class CallExpression extends Expression {
         for (int i = 0; i < args.length; ++i)
             eargs[i] = args[i].evaluate(env);
 
-        return env.call(name, eargs);
+        return env.call(location, name, eargs);
     }
 }

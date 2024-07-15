@@ -1,7 +1,7 @@
 package io.scriptor.runtime;
 
 @FunctionalInterface
-public interface IUnaryOperator {
+public interface IUnOp {
 
     Value evaluate(final Value value);
 }

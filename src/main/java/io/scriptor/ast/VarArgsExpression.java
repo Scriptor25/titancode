@@ -1,12 +1,12 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
 public class VarArgsExpression extends Expression {
 
-    public VarArgsExpression(final RLocation location) {
+    public VarArgsExpression(final SourceLocation location) {
         super(location);
     }
 
@@ -19,6 +19,6 @@ public class VarArgsExpression extends Expression {
     public Value evaluate(final Env env) {
         assert env != null;
 
-        return env.getVarArgs();
+        return env.getVarArgs(location);
     }
 }

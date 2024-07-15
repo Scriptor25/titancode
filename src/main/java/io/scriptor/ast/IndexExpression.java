@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -9,7 +9,7 @@ public class IndexExpression extends Expression {
     public final Expression expression;
     public final Expression index;
 
-    public IndexExpression(final RLocation location, final Expression expression, final Expression index) {
+    public IndexExpression(final SourceLocation location, final Expression expression, final Expression index) {
         super(location);
 
         assert expression != null;
@@ -35,6 +35,6 @@ public class IndexExpression extends Expression {
         final var value = expression.evaluate(env);
 
         final var i = eindex.getInt();
-        return value.getAt(i);
+        return value.getAt(location, i);
     }
 }

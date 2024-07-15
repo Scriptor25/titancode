@@ -4,25 +4,31 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.scriptor.TitanException;
+import io.scriptor.parser.SourceLocation;
+
 public class ObjectValue extends Value {
 
     private final Map<String, Value> fields = new HashMap<>();
 
-    public ObjectValue() {
+    public ObjectValue(final SourceLocation location) {
+        super(location);
     }
 
-    public ObjectValue(final Map<String, Value> fields) {
+    public ObjectValue(final SourceLocation location, final Map<String, Value> fields) {
+        super(location);
         assert fields != null;
         this.fields.putAll(fields);
     }
 
-    public ObjectValue(final Object object) {
+    public ObjectValue(final SourceLocation location, final Object object) {
+        super(location);
         assert object != null;
         for (final var field : object.getClass().getDeclaredFields())
             try {
-                fields.put(field.getName(), fromJava(field.get(object)));
+                fields.put(field.getName(), fromJava(location, field.get(object)));
             } catch (IllegalArgumentException | IllegalAccessException e) {
-                throw new RuntimeException(e);
+                throw new TitanException(location, e);
             }
     }
 
@@ -48,7 +54,7 @@ public class ObjectValue extends Value {
                 | NoSuchMethodException
                 | SecurityException
                 | NoSuchFieldException e) {
-            throw new RuntimeException(e);
+            throw new TitanException(location, e);
         }
     }
 
@@ -58,7 +64,7 @@ public class ObjectValue extends Value {
     }
 
     @Override
-    public Value getAt(final int index) {
+    public Value getAt(final SourceLocation location, final int index) {
         assert index >= 0;
         assert index < fields.size();
         return fields.values().toArray(Value[]::new)[index];
@@ -75,16 +81,16 @@ public class ObjectValue extends Value {
     }
 
     @Override
-    public Value getField(final String name) {
+    public Value getField(final SourceLocation location, final String name) {
         assert name != null;
         switch (name) {
             case "string" -> {
-                return new StringValue(getString());
+                return new StringValue(location, getString());
             }
         }
 
         if (!fields.containsKey(name))
-            throw new RuntimeException("no such field");
+            throw new TitanException(location, "no such field: %s", name);
 
         return fields.get(name);
     }
@@ -113,7 +119,7 @@ public class ObjectValue extends Value {
     }
 
     @Override
-    public Type getType() {
-        return Type.getObject();
+    public Type getType(final SourceLocation location) {
+        return Type.getObject(location);
     }
 }

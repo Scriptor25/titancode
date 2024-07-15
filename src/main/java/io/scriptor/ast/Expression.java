@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -15,9 +15,9 @@ public abstract class Expression {
         return builder.toString();
     }
 
-    public final RLocation location;
+    public final SourceLocation location;
 
-    public Expression(final RLocation location) {
+    public Expression(final SourceLocation location) {
         assert location != null;
         this.location = location;
     }

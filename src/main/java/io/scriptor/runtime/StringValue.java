@@ -1,10 +1,14 @@
 package io.scriptor.runtime;
 
+import io.scriptor.TitanException;
+import io.scriptor.parser.SourceLocation;
+
 public class StringValue extends Value {
 
     private final String value;
 
-    public StringValue(final String value) {
+    public StringValue(final SourceLocation location, final String value) {
+        super(location);
         assert value != null;
         this.value = value;
     }
@@ -20,18 +24,18 @@ public class StringValue extends Value {
     }
 
     @Override
-    public Value getAt(final int index) {
+    public Value getAt(final SourceLocation location, final int index) {
         assert index >= 0;
         assert index < value.length();
-        return new CharValue(value.charAt(index));
+        return new CharValue(location, value.charAt(index));
     }
 
     @Override
-    public Value getField(final String name) {
+    public Value getField(final SourceLocation location, final String name) {
         assert name != null;
         return switch (name) {
-            case "size" -> new NumberValue(value.length());
-            default -> throw new RuntimeException("no such field");
+            case "size" -> new NumberValue(location, value.length());
+            default -> throw new TitanException(location, "no such field: %s", name);
         };
     }
 
@@ -41,7 +45,7 @@ public class StringValue extends Value {
     }
 
     @Override
-    public Type getType() {
-        return Type.getString();
+    public Type getType(final SourceLocation location) {
+        return Type.getString(location);
     }
 }

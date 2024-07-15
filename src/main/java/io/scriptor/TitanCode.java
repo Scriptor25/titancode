@@ -64,7 +64,7 @@ public class TitanCode {
         streams.remove(filename);
     }
 
-    public static int fread(final String filename) throws IOException {
+    public static double fread(final String filename) throws IOException {
         if (!streams.containsKey(filename))
             return -1;
 
@@ -72,12 +72,12 @@ public class TitanCode {
         return stream.read();
     }
 
-    public static void fwrite(final String filename, final int x) throws IOException {
+    public static void fwrite(final String filename, final double x) throws IOException {
         if (!streams.containsKey(filename))
             return;
 
         final var stream = (OutputStream) streams.get(filename);
-        stream.write(x);
+        stream.write((byte) x);
     }
 
     public static void fprintf(final String filename, final String format, final Object... args) throws IOException {

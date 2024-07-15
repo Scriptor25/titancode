@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -8,7 +8,7 @@ public class IDExpression extends Expression {
 
     public final String name;
 
-    public IDExpression(final RLocation location, final String name) {
+    public IDExpression(final SourceLocation location, final String name) {
         super(location);
 
         assert name != null;
@@ -24,7 +24,6 @@ public class IDExpression extends Expression {
     @Override
     public Value evaluate(final Env env) {
         assert env != null;
-
-        return env.getVariable(name).value;
+        return env.getVariable(location, name).value;
     }
 }

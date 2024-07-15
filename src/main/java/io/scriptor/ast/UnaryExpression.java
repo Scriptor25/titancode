@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -9,7 +9,7 @@ public class UnaryExpression extends Expression {
     public final String operator;
     public final Expression expression;
 
-    public UnaryExpression(final RLocation location, final String operator, final Expression expression) {
+    public UnaryExpression(final SourceLocation location, final String operator, final Expression expression) {
         super(location);
 
         assert operator != null;
@@ -32,7 +32,7 @@ public class UnaryExpression extends Expression {
     @Override
     public Value evaluate(final Env env) {
         final var value = expression.evaluate(env);
-        final var op = env.getUnaryOperator(operator, value.getType());
+        final var op = env.getUnaryOperator(location, operator, value.getType(location));
         return op.evaluate(value);
     }
 }

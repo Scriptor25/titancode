@@ -1,10 +1,14 @@
 package io.scriptor.runtime;
 
+import io.scriptor.TitanException;
+import io.scriptor.parser.SourceLocation;
+
 public class CharValue extends Value {
 
     private final char value;
 
-    public CharValue(final char value) {
+    public CharValue(final SourceLocation location, final char value) {
+        super(location);
         this.value = value;
     }
 
@@ -19,11 +23,11 @@ public class CharValue extends Value {
     }
 
     @Override
-    public Value getField(final String name) {
+    public Value getField(final SourceLocation location, final String name) {
         assert name != null;
         return switch (name) {
-            case "string" -> new StringValue(getString());
-            default -> throw new RuntimeException("no such field");
+            case "string" -> new StringValue(location, getString());
+            default -> throw new TitanException(location, "no such field: %s", name);
         };
     }
 
@@ -68,7 +72,7 @@ public class CharValue extends Value {
     }
 
     @Override
-    public Type getType() {
-        return Type.getChar();
+    public Type getType(final SourceLocation location) {
+        return Type.getChar(location);
     }
 }

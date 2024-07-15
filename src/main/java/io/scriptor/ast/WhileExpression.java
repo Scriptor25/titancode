@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -9,7 +9,7 @@ public class WhileExpression extends Expression {
     public final Expression condition;
     public final Expression expression;
 
-    public WhileExpression(final RLocation location, final Expression condition, final Expression expression) {
+    public WhileExpression(final SourceLocation location, final Expression condition, final Expression expression) {
         super(location);
 
         assert condition != null;

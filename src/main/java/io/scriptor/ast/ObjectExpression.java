@@ -3,7 +3,7 @@ package io.scriptor.ast;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.ObjectValue;
 import io.scriptor.runtime.Value;
@@ -12,7 +12,7 @@ public class ObjectExpression extends Expression {
 
     public final Map<String, Expression> fields;
 
-    public ObjectExpression(final RLocation location, final Map<String, Expression> fields) {
+    public ObjectExpression(final SourceLocation location, final Map<String, Expression> fields) {
         super(location);
         this.fields = fields;
     }
@@ -57,6 +57,6 @@ public class ObjectExpression extends Expression {
         final Map<String, Value> values = new HashMap<>();
         for (final var entry : fields.entrySet())
             values.put(entry.getKey(), entry.getValue().evaluate(env));
-        return new ObjectValue(values);
+        return new ObjectValue(location, values);
     }
 }

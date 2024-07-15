@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.StringValue;
 import io.scriptor.runtime.Value;
@@ -9,7 +9,7 @@ public class StringExpression extends Expression {
 
     public final String value;
 
-    public StringExpression(final RLocation location, final String value) {
+    public StringExpression(final SourceLocation location, final String value) {
         super(location);
 
         assert value != null;
@@ -31,6 +31,6 @@ public class StringExpression extends Expression {
 
     @Override
     public Value evaluate(final Env env) {
-        return new StringValue(value);
+        return new StringValue(location, value);
     }
 }

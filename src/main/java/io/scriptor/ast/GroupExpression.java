@@ -2,7 +2,7 @@ package io.scriptor.ast;
 
 import java.util.Arrays;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -10,7 +10,7 @@ public class GroupExpression extends Expression {
 
     public final Expression[] expressions;
 
-    public GroupExpression(final RLocation location, final Expression[] expressions) {
+    public GroupExpression(final SourceLocation location, final Expression[] expressions) {
         super(location);
 
         assert expressions != null;

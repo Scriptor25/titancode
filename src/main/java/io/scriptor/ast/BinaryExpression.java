@@ -1,6 +1,7 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.TitanException;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 
@@ -11,7 +12,7 @@ public class BinaryExpression extends Expression {
     public final Expression rhs;
 
     public BinaryExpression(
-            final RLocation location,
+            final SourceLocation location,
             final String operator,
             final Expression lhs,
             final Expression rhs) {
@@ -44,7 +45,7 @@ public class BinaryExpression extends Expression {
             final var value = rhs.evaluate(env);
             if (lhs instanceof IDExpression e) {
                 final var name = e.name;
-                final var variable = env.setVariable(name, value);
+                final var variable = env.setVariable(location, name, value);
                 return variable.value;
             }
             if (lhs instanceof IndexExpression e) {
@@ -56,17 +57,17 @@ public class BinaryExpression extends Expression {
                 final var object = e.object.evaluate(env);
                 return object.putField(e.member, value);
             }
-            throw new RuntimeException();
+            throw new TitanException(location, "cannot assign to '%s'", lhs);
         }
 
         final var left = lhs.evaluate(env);
         final var right = rhs.evaluate(env);
-        final var op = env.getBinaryOperator(operator, left.getType(), right.getType());
+        final var op = env.getBinaryOperator(location, operator, left.getType(location), right.getType(location));
         final var value = op.operator().evaluate(left, right);
 
         if (op.reassign()) {
             final var name = ((IDExpression) lhs).name;
-            final var variable = env.setVariable(name, value);
+            final var variable = env.setVariable(location, name, value);
             return variable.value;
         }
 

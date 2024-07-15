@@ -1,32 +1,44 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.RLocation;
+import io.scriptor.parser.SourceLocation;
 import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Function;
+import io.scriptor.runtime.IFunction;
+import io.scriptor.runtime.NativeFunction;
 import io.scriptor.runtime.Value;
 
 public class DefFunctionExpression extends Expression {
 
     public final String name;
-    public final String[] args;
-    public final boolean varargs;
-    public final Expression expression;
+    public final String nativeName;
+    public final String[] argNames;
+    public final boolean hasVarArgs;
+    public final Expression body;
+
+    public final IFunction function;
 
     public DefFunctionExpression(
-            final RLocation location,
+            final SourceLocation location,
+            final String nativeName,
             final String name,
-            final String[] args,
-            final boolean varargs,
-            final Expression expression) {
+            final String[] argNames,
+            final boolean hasVarArgs,
+            final Expression body) {
         super(location);
 
         assert name != null;
-        assert args != null;
-        assert expression != null;
+        assert argNames != null;
+        assert nativeName != null || body != null;
 
         this.name = name;
-        this.args = args;
-        this.varargs = varargs;
-        this.expression = expression;
+        this.nativeName = nativeName;
+        this.argNames = argNames;
+        this.hasVarArgs = hasVarArgs;
+        this.body = body;
+
+        this.function = nativeName == null
+                ? new Function(location, name, argNames, hasVarArgs, body)
+                : new NativeFunction(location, nativeName, name, argNames.length, hasVarArgs);
     }
 
     @Override
@@ -36,15 +48,15 @@ public class DefFunctionExpression extends Expression {
                 .append(name)
                 .append('(');
 
-        for (int i = 0; i < args.length; ++i) {
+        for (int i = 0; i < argNames.length; ++i) {
             if (i > 0)
                 builder.append(", ");
-            builder.append(args[i]);
+            builder.append(argNames[i]);
         }
 
         return builder
                 .append(") = ")
-                .append(expression)
+                .append(body)
                 .toString();
     }
 
@@ -52,7 +64,7 @@ public class DefFunctionExpression extends Expression {
     public Value evaluate(final Env env) {
         assert env != null;
 
-        env.defineFunction(name, args, varargs, expression);
+        env.defineFunction(function);
         return null;
     }
 }

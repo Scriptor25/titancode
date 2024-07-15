@@ -3,26 +3,36 @@ package io.scriptor.runtime;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.scriptor.ast.Expression;
+import io.scriptor.TitanException;
+import io.scriptor.parser.SourceLocation;
 
 public class Env {
 
     private final Env parent;
     private final Env global;
-    private final Map<String, Map<Integer, Function>> functions = new HashMap<>();
-    private final Map<String, Variable> variables = new HashMap<>();
+    private final Value[] varargs;
 
-    private Value[] varargs;
+    private final Map<String, Map<Integer, IFunction>> functions = new HashMap<>();
+    private final Map<String, Variable> variables = new HashMap<>();
 
     public Env() {
         this.parent = null;
         this.global = this;
+        this.varargs = null;
     }
 
     public Env(final Env parent) {
         assert parent != null;
         this.parent = parent;
         this.global = parent.global;
+        this.varargs = null;
+    }
+
+    public Env(final Env parent, final Value[] varargs) {
+        assert parent != null;
+        this.parent = parent;
+        this.global = parent.global;
+        this.varargs = varargs;
     }
 
     public boolean hasParent() {
@@ -37,243 +47,250 @@ public class Env {
         return global;
     }
 
-    public void defineFunction(
-            final String name,
-            final String[] args,
-            final boolean varargs,
-            final Expression expression) {
-        assert name != null;
-        assert args != null;
-        assert expression != null;
+    public void defineFunction(final IFunction function) {
+        assert function != null;
 
-        if (functions.containsKey(name) && functions.get(name).containsKey(args.length))
-            throw new RuntimeException("function does already exist");
+        if (functions.containsKey(function.name()) && functions.get(function.name()).containsKey(function.argCount()))
+            throw new TitanException(
+                    function.location(),
+                    "function does already exist: %s(%d%s)",
+                    function.name(),
+                    function.argCount(),
+                    function.hasVarArgs() ? ", ?" : "");
 
         functions
-                .computeIfAbsent(name, key -> new HashMap<>())
-                .put(args.length, new Function(name, args, varargs, expression));
+                .computeIfAbsent(function.name(), key -> new HashMap<>())
+                .put(function.argCount(), function);
     }
 
-    public Function getFunction(final String name, final int args) {
+    public IFunction getFunction(final SourceLocation location, final String name, final int argCount) {
         assert name != null;
 
         if (functions.containsKey(name)) {
-            if (functions.get(name).containsKey(args))
-                return functions.get(name).get(args);
+            if (functions.get(name).containsKey(argCount))
+                return functions.get(name).get(argCount);
             for (final var entry : functions.get(name).entrySet()) {
                 final var function = entry.getValue();
-                if (args < function.args.length)
+                if (argCount < function.argCount())
                     continue;
-                if (args > function.args.length && !function.varargs)
+                if (argCount > function.argCount() && !function.hasVarArgs())
                     continue;
                 return function;
             }
         }
 
         if (!hasParent())
-            throw new RuntimeException("no such function");
+            throw new TitanException(
+                    location,
+                    "no such function: %s(%d)",
+                    name,
+                    argCount);
 
-        return parent.getFunction(name, args);
+        return parent.getFunction(location, name, argCount);
     }
 
-    public RBinaryOperator getBinaryOperator(final String operator, final Type lhs, final Type rhs) {
+    public BinOpInfo getBinaryOperator(
+            final SourceLocation location,
+            final String operator,
+            final Type lhs,
+            final Type rhs) {
+        assert location != null;
         assert operator != null;
         assert lhs != null;
         assert rhs != null;
 
         switch (operator) {
             case "==" -> {
-                return new RBinaryOperator((l, r) -> new NumberValue(l.getValue().equals(r.getValue())), false);
+                return new BinOpInfo(
+                        (l, r) -> new NumberValue(location, l.getValue().equals(r.getValue())),
+                        false);
             }
 
             case "&&" -> {
-                return new RBinaryOperator((l, r) -> new NumberValue(l.getBoolean() && r.getBoolean()), false);
+                return new BinOpInfo(
+                        (l, r) -> new NumberValue(location, l.getBoolean() && r.getBoolean()),
+                        false);
             }
 
             case "||" -> {
-                return new RBinaryOperator((l, r) -> new NumberValue(l.getBoolean() || r.getBoolean()), false);
+                return new BinOpInfo(
+                        (l, r) -> new NumberValue(location, l.getBoolean() || r.getBoolean()),
+                        false);
             }
 
             default -> {
-                if (lhs == Type.getNumber() && rhs == Type.getNumber()) {
+                if (lhs == Type.getNumber(location) && rhs == Type.getNumber(location)) {
                     switch (operator) {
                         case "+", "+=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() + r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() + r.getDouble()),
                                     operator.equals("+="));
                         }
                         case "-", "-=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() - r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() - r.getDouble()),
                                     operator.equals("-="));
                         }
                         case "*", "*=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() * r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() * r.getDouble()),
                                     operator.equals("*="));
                         }
                         case "/", "/=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() / r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() / r.getDouble()),
                                     operator.equals("/="));
                         }
                         case "%", "%=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() % r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() % r.getDouble()),
                                     operator.equals("%="));
                         }
 
                         case "&", "&=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getLong() & r.getLong()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getLong() & r.getLong()),
                                     operator.equals("&="));
                         }
                         case "|", "|=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getLong() | r.getLong()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getLong() | r.getLong()),
                                     operator.equals("|="));
                         }
                         case "^", "^=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getLong() ^ r.getLong()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getLong() ^ r.getLong()),
                                     operator.equals("^="));
                         }
 
                         case "<<", "<<=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getLong() << r.getLong()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getLong() << r.getLong()),
                                     operator.equals("<<="));
                         }
                         case ">>", ">>=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getLong() >> r.getLong()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getLong() >> r.getLong()),
                                     operator.equals(">>="));
                         }
                         case ">>>", ">>>=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getLong() >>> r.getLong()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getLong() >>> r.getLong()),
                                     operator.equals(">>>="));
                         }
 
                         case "<" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() < r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() < r.getDouble()),
                                     false);
                         }
                         case ">" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() > r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() > r.getDouble()),
                                     false);
                         }
                         case "<=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() <= r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() <= r.getDouble()),
                                     false);
                         }
                         case ">=" -> {
-                            return new RBinaryOperator(
-                                    (l, r) -> new NumberValue(l.getDouble() >= r.getDouble()),
+                            return new BinOpInfo(
+                                    (l, r) -> new NumberValue(location, l.getDouble() >= r.getDouble()),
                                     false);
                         }
                     }
                 }
 
-                throw new RuntimeException("no such binary operator");
+                throw new TitanException(
+                        location,
+                        "no such binary operator: %s%s%s",
+                        lhs.name,
+                        operator,
+                        rhs.name);
             }
         }
     }
 
-    public IUnaryOperator getUnaryOperator(final String operator, final Type type) {
+    public IUnOp getUnaryOperator(final SourceLocation location, final String operator, final Type type) {
+        assert location != null;
         assert operator != null;
         assert type != null;
 
         switch (operator) {
             case "!" -> {
-                return v -> new NumberValue(!v.getBoolean());
+                return v -> new NumberValue(location, !v.getBoolean());
             }
 
             default -> {
-                if (type == Type.getNumber()) {
+                if (type == Type.getNumber(location)) {
                     switch (operator) {
                         case "-" -> {
-                            return v -> new NumberValue(-v.getDouble());
+                            return v -> new NumberValue(location, -v.getDouble());
                         }
                     }
                 }
 
-                throw new RuntimeException("no such unary operator");
+                throw new TitanException(location,
+                        "no such unary operator: %s%s",
+                        operator,
+                        type.name);
             }
         }
     }
 
-    public void defineVariable(final String name, final Value value) {
+    public void defineVariable(final SourceLocation location, final String name, final Value value) {
+        assert location != null;
         assert name != null;
         assert value != null;
 
         if (variables.containsKey(name))
-            throw new RuntimeException("variable does already exist");
+            throw new TitanException(location, "variable does already exist: %s", name);
 
         variables.put(name, new Variable(name, value));
     }
 
-    public Variable getVariable(final String name) {
+    public Variable getVariable(final SourceLocation location, final String name) {
         assert name != null;
 
         if (variables.containsKey(name))
             return variables.get(name);
 
         if (!hasParent())
-            throw new RuntimeException("no such variable");
+            throw new TitanException(location, "no such variable: %s", name);
 
-        return parent.getVariable(name);
+        return parent.getVariable(location, name);
     }
 
-    public Variable setVariable(final String name, final Value value) {
+    public Variable setVariable(final SourceLocation location, final String name, final Value value) {
+        assert location != null;
         assert name != null;
         assert value != null;
 
-        final var variable = getVariable(name);
+        final var variable = getVariable(location, name);
         variable.value = value;
         return variable;
     }
 
-    public Value getVarArgs() {
+    public Value getVarArgs(final SourceLocation location) {
+        assert location != null;
+
         if (varargs == null) {
             if (!hasParent())
-                throw new RuntimeException("no var args in this environment");
+                throw new TitanException(location, "no var args in this environment");
 
-            return parent.getVarArgs();
+            return parent.getVarArgs(location);
         }
 
-        return new ArrayValue(varargs);
+        return new ArrayValue(location, varargs);
     }
 
-    public Value call(final String name, final Value[] args) {
+    public Value call(final SourceLocation location, final String name, final Value[] args) {
         assert name != null;
         assert args != null;
 
-        final var function = getFunction(name, args.length);
-        final var env = new Env(global);
-
-        assert args.length >= function.args.length;
-        assert function.varargs || args.length == function.args.length;
-
-        if (args.length < function.args.length)
-            throw new RuntimeException("not enough arguments");
-
-        if (!function.varargs && args.length > function.args.length)
-            throw new RuntimeException("too many arguments");
-
-        int i = 0;
-        for (; i < function.args.length; ++i)
-            env.defineVariable(function.args[i], args[i]);
-
-        final var f = i;
-        env.varargs = new Value[args.length - f];
-        for (; i < args.length; ++i)
-            env.varargs[i - f] = args[i];
-
-        return function.expression.evaluate(env);
+        return getFunction(location, name, args.length)
+                .call(global, args);
     }
 
     @SuppressWarnings("unchecked")
@@ -281,27 +298,14 @@ public class Env {
         assert name != null;
         assert args != null;
 
-        final var function = getFunction(name, args.length);
-        final var env = new Env(global);
+        final var location = SourceLocation.UNKNOWN;
 
-        assert args.length >= function.args.length;
-        assert function.varargs || args.length == function.args.length;
+        final var values = new Value[args.length];
+        for (int i = 0; i < args.length; ++i)
+            values[i] = Value.fromJava(location, args[i]);
 
-        if (args.length < function.args.length)
-            throw new RuntimeException("not enough arguments");
-
-        if (!function.varargs && args.length > function.args.length)
-            throw new RuntimeException("too many arguments");
-
-        int i = 0;
-        for (; i < function.args.length; ++i)
-            env.defineVariable(function.args[i], Value.fromJava(args[i]));
-
-        final var f = i;
-        env.varargs = new Value[args.length - f];
-        for (; i < args.length; ++i)
-            env.varargs[i - f] = Value.fromJava(args[i]);
-
-        return (R) function.expression.evaluate(env).getValue();
+        return (R) getFunction(location, name, values.length)
+                .call(global, values)
+                .getValue();
     }
 }

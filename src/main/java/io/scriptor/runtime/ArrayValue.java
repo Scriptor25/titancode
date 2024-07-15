@@ -2,19 +2,23 @@ package io.scriptor.runtime;
 
 import java.util.Arrays;
 
+import io.scriptor.TitanException;
+import io.scriptor.parser.SourceLocation;
+
 public class ArrayValue extends Value {
 
     private final Value[] values;
 
-    public ArrayValue(final Value[] values) {
+    public ArrayValue(final SourceLocation location, final Value[] values) {
+        super(location);
         assert values != null;
         this.values = values;
     }
 
-    public ArrayValue(final Object[] values) {
-        this(Arrays
+    public ArrayValue(final SourceLocation location, final Object[] values) {
+        this(location, Arrays
                 .stream(values)
-                .map(value -> Value.fromJava(value))
+                .map(value -> Value.fromJava(location, value))
                 .toArray(Value[]::new));
     }
 
@@ -32,7 +36,7 @@ public class ArrayValue extends Value {
     }
 
     @Override
-    public Value getAt(final int index) {
+    public Value getAt(final SourceLocation location, final int index) {
         assert index >= 0;
         assert index < values.length;
         return values[index];
@@ -47,12 +51,12 @@ public class ArrayValue extends Value {
     }
 
     @Override
-    public Value getField(final String name) {
+    public Value getField(final SourceLocation location, final String name) {
         assert name != null;
         return switch (name) {
-            case "size" -> new NumberValue(values.length);
-            case "string" -> new StringValue(getString());
-            default -> throw new RuntimeException("no such field");
+            case "size" -> new NumberValue(location, values.length);
+            case "string" -> new StringValue(location, getString());
+            default -> throw new TitanException(location, "no such field: %s", name);
         };
     }
 
@@ -62,7 +66,7 @@ public class ArrayValue extends Value {
     }
 
     @Override
-    public Type getType() {
-        return Type.getArray();
+    public Type getType(final SourceLocation location) {
+        return Type.getArray(location);
     }
 }
