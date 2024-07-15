@@ -1,5 +1,6 @@
 package io.scriptor;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,13 +8,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
 import io.scriptor.parser.Parser;
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 
 public class TitanCode {
 
@@ -21,7 +23,7 @@ public class TitanCode {
 
     public static void main(String[] args) throws IOException {
         final var filename = args[0];
-        final var env = new Env();
+        final var env = new Environment();
 
         Parser.parseFile(new File(filename).getCanonicalFile(), new Vector<>(), env);
 
@@ -37,8 +39,8 @@ public class TitanCode {
         System.out.printf(format, args);
     }
 
-    public static String readLine() {
-        return System.console().readLine();
+    public static String readLine() throws IOException {
+        return new BufferedReader(new InputStreamReader(System.in)).readLine();
     }
 
     public static void fopen(final String filename, final String flags) throws FileNotFoundException {

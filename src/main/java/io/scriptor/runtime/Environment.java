@@ -7,7 +7,7 @@ import io.scriptor.Name;
 import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
 
-public class Env {
+public class Environment {
 
     public static final Map<Name, Map<Integer, FunctionValue>> functions = new HashMap<>();
 
@@ -201,6 +201,15 @@ public class Env {
                                     false);
                         }
                     }
+                } else if (lhs == Type.getString(location) || rhs == Type.getString(location)) {
+                    switch (operator) {
+                        case "+", "+=" -> {
+                            return new BinOpInfo(
+                                    (l, r) -> new StringValue(location, l.getString() + r.getString()),
+                                    Type.getString(location),
+                                    operator.equals("+="));
+                        }
+                    }
                 }
 
                 throw new TitanException(
@@ -246,25 +255,25 @@ public class Env {
         }
     }
 
-    private final Env parent;
-    private final Env global;
+    private final Environment parent;
+    private final Environment global;
     private final Value[] varargs;
     private final Map<Name, Variable> variables = new HashMap<>();
 
-    public Env() {
+    public Environment() {
         this.parent = null;
         this.global = this;
         this.varargs = null;
     }
 
-    public Env(final Env parent) {
+    public Environment(final Environment parent) {
         assert parent != null;
         this.parent = parent;
         this.global = parent.global;
         this.varargs = null;
     }
 
-    public Env(final Env parent, final Value[] varargs) {
+    public Environment(final Environment parent, final Value[] varargs) {
         assert parent != null;
         this.parent = parent;
         this.global = parent.global;
@@ -275,11 +284,11 @@ public class Env {
         return parent != null;
     }
 
-    public Env getParent() {
+    public Environment getParent() {
         return parent;
     }
 
-    public Env getGlobal() {
+    public Environment getGlobal() {
         return global;
     }
 

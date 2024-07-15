@@ -2,7 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.Name;
 import io.scriptor.SourceLocation;
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
@@ -56,7 +56,7 @@ public class ForExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public Value evaluate(final Environment env) {
         assert env != null;
 
         final var efrom = from.evaluate(env).getDouble();
@@ -65,7 +65,7 @@ public class ForExpression extends Expression {
 
         Value result = null;
         for (double i = efrom; i < eto; i += estep) {
-            final var env1 = new Env(env);
+            final var env1 = new Environment(env);
             if (id != null)
                 env1.defineVariable(location, Name.get(id), Value.fromJava(location, i));
             result = expression.evaluate(env1);

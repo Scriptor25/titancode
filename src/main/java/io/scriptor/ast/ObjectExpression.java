@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.scriptor.SourceLocation;
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.ObjectValue;
 import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
@@ -59,7 +59,7 @@ public class ObjectExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public Value evaluate(final Environment env) {
         final Map<String, Value> values = new HashMap<>();
         for (final var entry : fields.entrySet())
             values.put(entry.getKey(), entry.getValue().evaluate(env));

@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.NumberValue;
 import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
@@ -34,7 +34,7 @@ public class NumberExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public Value evaluate(final Environment env) {
         return new NumberValue(location, value);
     }
 }

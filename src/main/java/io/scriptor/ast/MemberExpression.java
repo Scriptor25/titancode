@@ -1,7 +1,7 @@
 package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
@@ -31,7 +31,7 @@ public class MemberExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public Value evaluate(final Environment env) {
         assert env != null;
 
         final var obj = object.evaluate(env);

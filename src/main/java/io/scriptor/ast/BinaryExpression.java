@@ -2,7 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
@@ -40,11 +40,11 @@ public class BinaryExpression extends Expression {
 
     @Override
     public Type getType() {
-        return Env.getBinaryOperator(location, operator, lhs.getType(), rhs.getType()).result();
+        return Environment.getBinaryOperator(location, operator, lhs.getType(), rhs.getType()).result();
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public Value evaluate(final Environment env) {
         assert env != null;
 
         if (operator.equals("=")) {
@@ -68,7 +68,7 @@ public class BinaryExpression extends Expression {
 
         final var left = lhs.evaluate(env);
         final var right = rhs.evaluate(env);
-        final var op = Env.getBinaryOperator(location, operator, left.getType(location), right.getType(location));
+        final var op = Environment.getBinaryOperator(location, operator, left.getType(location), right.getType(location));
         final var value = op.operator().evaluate(left, right);
 
         if (op.reassign()) {

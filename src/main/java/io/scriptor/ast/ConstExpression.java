@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
@@ -22,7 +22,7 @@ public class ConstExpression extends Expression {
         assert expression.isConstant();
 
         this.expression = expression;
-        this.value = expression.evaluate(new Env());
+        this.value = expression.evaluate(new Environment());
     }
 
     @Override
@@ -41,7 +41,7 @@ public class ConstExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
+    public Value evaluate(final Environment env) {
         return value;
     }
 }

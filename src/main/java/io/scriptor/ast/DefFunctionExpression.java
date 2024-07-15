@@ -2,7 +2,7 @@ package io.scriptor.ast;
 
 import io.scriptor.Name;
 import io.scriptor.SourceLocation;
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.Function;
 import io.scriptor.runtime.IFunction;
 import io.scriptor.runtime.NativeFunction;
@@ -67,7 +67,7 @@ public class DefFunctionExpression extends Expression {
     }
 
     @Override
-    public Value evaluate(final Env env) {
-        return Env.defineFunction(function);
+    public Value evaluate(final Environment env) {
+        return Environment.defineFunction(function);
     }
 }

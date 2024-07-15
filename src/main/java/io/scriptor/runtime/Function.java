@@ -56,7 +56,7 @@ public class Function implements IFunction {
     }
 
     @Override
-    public Value call(final Env parent, final Value... args) {
+    public Value call(final Environment parent, final Value... args) {
         assert isComplete();
 
         if (args.length < argNames.length)
@@ -82,7 +82,7 @@ public class Function implements IFunction {
             varargs = null;
         }
 
-        final var env = new Env(parent, varargs);
+        final var env = new Environment(parent, varargs);
         for (int i = 0; i < argNames.length; ++i)
             env.defineVariable(location, Name.get(argNames[i]), args[i]);
 

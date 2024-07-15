@@ -15,5 +15,5 @@ public interface IFunction {
 
     boolean isComplete();
 
-    Value call(final Env parent, final Value... args);
+    Value call(final Environment parent, final Value... args);
 }

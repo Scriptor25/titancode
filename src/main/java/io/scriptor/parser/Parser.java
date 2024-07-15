@@ -37,11 +37,11 @@ import io.scriptor.ast.StringExpression;
 import io.scriptor.ast.UnaryExpression;
 import io.scriptor.ast.VarArgsExpression;
 import io.scriptor.ast.WhileExpression;
-import io.scriptor.runtime.Env;
+import io.scriptor.runtime.Environment;
 
 public class Parser implements AutoCloseable, Iterable<Expression> {
 
-    public static void parseFile(final File file, final List<File> parsed, final Env env) throws IOException {
+    public static void parseFile(final File file, final List<File> parsed, final Environment env) throws IOException {
         if (parsed.contains(file))
             return;
         parsed.add(file);
@@ -71,6 +71,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         precedences.put("%=", 0);
         precedences.put("&=", 0);
         precedences.put("|=", 0);
+        precedences.put("^=", 0);
         precedences.put("&&", 1);
         precedences.put("||", 1);
         precedences.put("<", 2);
@@ -123,7 +124,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
     private final File file;
     private final List<File> parsed;
-    private final Env env;
+    private final Environment env;
 
     private final InputStream stream;
     private final Stack<String> namespace = new Stack<>();
@@ -134,7 +135,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     private int column = 0;
     private Token token;
 
-    private Parser(final File file, final List<File> parsed, final Env env) throws IOException {
+    private Parser(final File file, final List<File> parsed, final Environment env) throws IOException {
         this.file = file;
         this.parsed = parsed;
         this.env = env;

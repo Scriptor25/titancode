@@ -89,7 +89,7 @@ public class NativeFunction implements IFunction {
     }
 
     @Override
-    public Value call(final Env parent, final Value... args) {
+    public Value call(final Environment parent, final Value... args) {
         try {
             final var params = method.getParameterTypes();
             final Object[] objects = new Object[params.length];
