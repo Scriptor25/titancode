@@ -1,6 +1,6 @@
 package io.scriptor.runtime;
 
-import io.scriptor.parser.SourceLocation;
+import io.scriptor.SourceLocation;
 
 public abstract class Value {
 

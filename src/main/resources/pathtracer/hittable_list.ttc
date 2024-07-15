@@ -1,18 +1,19 @@
 include "hittable.ttc"
 
-def hittable_list() = {
+:hittable_list
+def new() = {
     type = 1,
-    objects[0]
+    objects = []
 }
 
-def hittable_list(object) = {
+def new(object) = {
     type = 1,
-    objects[1] = object
+    objects = [object]
 }
 
-def hittable_list_clear(self) = self.objects = []
+def clear(self) = self.objects = []
 
-def hittable_list_add(self, object) = (
+def add(self, object) = (
     def tmp[self.objects.size + 1]
     for [0, self.objects.size] -> i
         tmp[i] = self.objects[i]
@@ -20,18 +21,19 @@ def hittable_list_add(self, object) = (
     self.objects = tmp
 )
 
-def hittable_list_hit(self, r, ray_tmin, ray_tmax, rec) = (
+def hit(self, r, ray_tmin, ray_tmax, rec) = (
     def temp_rec = {}
     def hit_anything = 0
     def closest_so_far = ray_tmax
 
     for [0, self.objects.size] -> i (
-        if [hittable_hit(self.objects[i], r, ray_tmin, closest_so_far, temp_rec)] (
+        if [hittable:hit(self.objects[i], r, ray_tmin, closest_so_far, temp_rec)] (
             hit_anything = 1
             closest_so_far = temp_rec.t
-            hit_record_copy(rec, temp_rec)
+            rec = temp_rec
         )
     )
 
     hit_anything
 )
+:hittable_list

@@ -3,8 +3,8 @@ package io.scriptor.runtime;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
-import io.scriptor.parser.SourceLocation;
 
 public class Type {
 

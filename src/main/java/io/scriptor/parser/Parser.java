@@ -9,8 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Stack;
 import java.util.Vector;
 
+import io.scriptor.Name;
+import io.scriptor.Namespace;
+import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
 import io.scriptor.ast.ArrayExpression;
 import io.scriptor.ast.BinaryExpression;
@@ -43,8 +47,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         parsed.add(file);
 
         final var parser = new Parser(file, parsed, env);
-        for (final var expression : parser) {
-            expression.evaluate(env);
+        try {
+            for (final var expression : parser) {
+                expression.evaluate(env);
+            }
+        } catch (final NoSuchElementException e) {
         }
         parser.close();
     }
@@ -119,11 +126,13 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     private final Env env;
 
     private final InputStream stream;
+    private final Stack<String> namespace = new Stack<>();
+    private boolean inFunction = false;
 
     private int chr = -1;
     private int row = 1;
     private int column = 0;
-    private RToken token;
+    private Token token;
 
     private Parser(final File file, final List<File> parsed, final Env env) throws IOException {
         this.file = file;
@@ -145,19 +154,27 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
             @Override
             public boolean hasNext() {
-                return token != null;
+                return !atEOF();
             }
 
             @Override
             public Expression next() {
-                if (!hasNext())
-                    throw new NoSuchElementException();
                 try {
-                    while (at("include"))
-                        parseInclude();
+                    while (!atEOF()) {
+                        if (at("include")) {
+                            parseInclude();
+                            continue;
+                        }
 
-                    return parse();
-                } catch (IOException e) {
+                        if (at(":")) {
+                            parseNamespace();
+                            continue;
+                        }
+
+                        return parse();
+                    }
+                    throw new NoSuchElementException();
+                } catch (final IOException e) {
                     throw new NoSuchElementException(e);
                 }
             }
@@ -212,7 +229,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         ++row;
     }
 
-    private RToken next() throws IOException {
+    private Token next() throws IOException {
         if (chr < 0)
             chr = get();
 
@@ -275,7 +292,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                             loc = new SourceLocation(file, row, column);
                             value += (char) chr;
                             chr = get();
-                            return token = new RToken(loc, TokenType.OTHER, value);
+                            return token = new Token(loc, TokenType.OTHER, value);
                     }
                     break;
 
@@ -288,7 +305,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                 case STRING:
                     if (chr == '"') {
                         chr = get();
-                        return token = new RToken(loc, TokenType.STRING, value);
+                        return token = new Token(loc, TokenType.STRING, value);
                     }
                     if (chr == '\\') {
                         escape();
@@ -299,7 +316,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                 case CHAR:
                     if (chr == '\'') {
                         chr = get();
-                        return token = new RToken(loc, TokenType.CHAR, value);
+                        return token = new Token(loc, TokenType.CHAR, value);
                     }
                     if (chr == '\\') {
                         escape();
@@ -313,19 +330,19 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                         break;
                     }
                     if (!isDigit(chr))
-                        return token = new RToken(loc, TokenType.NUMBER, value);
+                        return token = new Token(loc, TokenType.NUMBER, value);
                     value += (char) chr;
                     break;
 
                 case ID:
                     if (!isID(chr))
-                        return token = new RToken(loc, TokenType.ID, value);
+                        return token = new Token(loc, TokenType.ID, value);
                     value += (char) chr;
                     break;
 
                 case BINARY_OPERATOR:
                     if (!isOp(chr))
-                        return token = new RToken(loc, TokenType.BINARY_OPERATOR, value);
+                        return token = new Token(loc, TokenType.BINARY_OPERATOR, value);
                     value += (char) chr;
                     break;
 
@@ -340,12 +357,14 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     }
 
     private boolean at(final TokenType type) {
-        assert token != null;
+        if (atEOF())
+            return false;
         return token.type() == type;
     }
 
     private boolean at(final String value) {
-        assert token != null;
+        if (atEOF())
+            return false;
         return token.value().equals(value);
     }
 
@@ -353,7 +372,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return token == null;
     }
 
-    private RToken expect(final TokenType type) throws IOException {
+    private Token expect(final TokenType type) throws IOException {
         if (at(type))
             return skip();
 
@@ -379,10 +398,16 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                 value);
     }
 
-    private RToken skip() throws IOException {
+    private Token skip() throws IOException {
         final var t = token;
         next();
         return t;
+    }
+
+    private Namespace getNamespace() {
+        if (inFunction)
+            return new Namespace();
+        return new Namespace(namespace.toArray(String[]::new));
     }
 
     private void parseInclude() throws IOException {
@@ -395,6 +420,18 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             file = new File(this.file.getParentFile(), filename);
 
         parseFile(file.getCanonicalFile(), parsed, env);
+    }
+
+    private void parseNamespace() throws IOException {
+        // :<name>
+
+        expect(":");
+        final var name = expect(TokenType.ID).value();
+
+        if (namespace.isEmpty() || !namespace.lastElement().equals(name))
+            namespace.push(name);
+        else
+            namespace.pop();
     }
 
     private Expression parse() throws IOException {
@@ -422,9 +459,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             nativeName = null;
         }
 
-        final var name = expect(TokenType.ID).value();
+        final var id = expect(TokenType.ID).value();
+        final var namespace = getNamespace();
+        final var name = Name.get(namespace, id);
 
-        if (!atEOF() && at("(")) {
+        if (at("(")) {
             // def <name>(<arg>..., ?) = <expression>
 
             next();
@@ -446,9 +485,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             expect(")");
 
             final Expression body;
-            if (!atEOF() && at("=")) {
+            if (at("=")) {
                 next();
+                inFunction = true;
                 body = parse();
+                inFunction = false;
             } else {
                 body = null;
             }
@@ -462,7 +503,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
                     body);
         }
 
-        if (!atEOF() && at("[")) {
+        if (at("[")) {
             // def <name>[<size>] = <expression>
 
             next();
@@ -483,7 +524,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         // def <name> = <expression>
 
         final Expression expression;
-        if (!atEOF() && at("=")) {
+        if (at("=")) {
             next();
             expression = parse();
         } else {
@@ -585,11 +626,11 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     private Expression parseBinary(Expression lhs, int minPrecedence) throws IOException {
         // <expression> <operator> <expression>
 
-        while (!atEOF() && at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) >= minPrecedence) {
+        while (at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) >= minPrecedence) {
             final var op = skip().value();
             final var opPrecedence = precedences.get(op);
             var rhs = parseCall();
-            while (!atEOF() && at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) > opPrecedence) {
+            while (at(TokenType.BINARY_OPERATOR) && precedences.get(token.value()) > opPrecedence) {
                 final var laPrecedence = precedences.get(token.value());
                 rhs = parseBinary(rhs, opPrecedence + (laPrecedence > opPrecedence ? 1 : 0));
             }
@@ -602,7 +643,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         // <callee>(<arg>...)
 
         var callee = parseIndex();
-        if (!atEOF() && at("(")) {
+        if (at("(")) {
             next();
 
             final List<Expression> args = new Vector<>();
@@ -623,7 +664,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         // <expression>[<index>]
 
         var expression = parseMember();
-        while (!atEOF() && at("[")) {
+        while (at("[")) {
             next();
 
             final var index = parse();
@@ -642,7 +683,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     private Expression parseMember(Expression object) throws IOException {
         // <expression>.<expression>
 
-        while (!atEOF() && at(".")) {
+        while (at(".")) {
             next();
 
             final var member = expect(TokenType.ID).value();
@@ -653,6 +694,9 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     }
 
     private Expression parsePrimary() throws IOException {
+
+        if (atEOF())
+            throw new TitanException(SourceLocation.UNKNOWN, "reached end of file");
 
         final var location = token.location();
 
@@ -666,8 +710,13 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
             return parseIf();
 
         if (at(TokenType.ID)) {
-            final var name = skip().value();
-            return new IDExpression(location, name);
+            final var ns = new Stack<String>();
+            ns.push(skip().value());
+            while (at(":")) {
+                next();
+                ns.push(expect(TokenType.ID).value());
+            }
+            return new IDExpression(location, ns.toArray(String[]::new));
         }
 
         if (at(TokenType.NUMBER)) {
@@ -708,7 +757,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         if (at("{")) {
             next();
             final Map<String, Expression> fields = new HashMap<>();
-            while (!atEOF() && !at("}")) {
+            while (!at("}")) {
                 final var name = expect(TokenType.ID).value();
 
                 final Expression value;
@@ -745,7 +794,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         if (at("[")) {
             next();
             final List<Expression> values = new Vector<>();
-            while (!atEOF() && !at("]")) {
+            while (!at("]")) {
                 values.add(parse());
                 if (!at("]"))
                     expect(",");

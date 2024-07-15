@@ -1,6 +1,6 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.SourceLocation;
+import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Value;
 

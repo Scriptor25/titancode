@@ -1,7 +1,5 @@
 package io.scriptor;
 
-import io.scriptor.parser.SourceLocation;
-
 public class TitanException extends RuntimeException {
 
     public TitanException() {

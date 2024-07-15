@@ -3,7 +3,7 @@ package io.scriptor.ast;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.scriptor.parser.SourceLocation;
+import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.ObjectValue;
 import io.scriptor.runtime.Value;

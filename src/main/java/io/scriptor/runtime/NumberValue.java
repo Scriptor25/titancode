@@ -1,7 +1,7 @@
 package io.scriptor.runtime;
 
+import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
-import io.scriptor.parser.SourceLocation;
 
 public class NumberValue extends Value {
 

@@ -1,4 +1,5 @@
-def color_int(self) = (
+:color
+def int(self) = (
     def r = self[0]
     def g = self[1]
     def b = self[2]
@@ -9,3 +10,4 @@ def color_int(self) = (
 
     (ir & 255) << 16 | (ig & 255) << 8 | (ib & 255)
 )
+:color

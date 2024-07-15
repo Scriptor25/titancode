@@ -3,8 +3,9 @@ package io.scriptor.runtime;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.scriptor.Name;
+import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
-import io.scriptor.parser.SourceLocation;
 
 public class Env {
 
@@ -12,8 +13,8 @@ public class Env {
     private final Env global;
     private final Value[] varargs;
 
-    private final Map<String, Map<Integer, IFunction>> functions = new HashMap<>();
-    private final Map<String, Variable> variables = new HashMap<>();
+    private final Map<Name, Map<Integer, IFunction>> functions = new HashMap<>();
+    private final Map<Name, Variable> variables = new HashMap<>();
 
     public Env() {
         this.parent = null;
@@ -63,7 +64,10 @@ public class Env {
                 .put(function.argCount(), function);
     }
 
-    public IFunction getFunction(final SourceLocation location, final String name, final int argCount) {
+    public IFunction getFunction(
+            final SourceLocation location,
+            final Name name,
+            final int argCount) {
         assert name != null;
 
         if (functions.containsKey(name)) {
@@ -239,7 +243,7 @@ public class Env {
         }
     }
 
-    public void defineVariable(final SourceLocation location, final String name, final Value value) {
+    public void defineVariable(final SourceLocation location, final Name name, final Value value) {
         assert location != null;
         assert name != null;
         assert value != null;
@@ -250,7 +254,7 @@ public class Env {
         variables.put(name, new Variable(name, value));
     }
 
-    public Variable getVariable(final SourceLocation location, final String name) {
+    public Variable getVariable(final SourceLocation location, final Name name) {
         assert name != null;
 
         if (variables.containsKey(name))
@@ -262,7 +266,7 @@ public class Env {
         return parent.getVariable(location, name);
     }
 
-    public Variable setVariable(final SourceLocation location, final String name, final Value value) {
+    public Variable setVariable(final SourceLocation location, final Name name, final Value value) {
         assert location != null;
         assert name != null;
         assert value != null;
@@ -285,7 +289,7 @@ public class Env {
         return new ArrayValue(location, varargs);
     }
 
-    public Value call(final SourceLocation location, final String name, final Value[] args) {
+    public Value call(final SourceLocation location, final Name name, final Value[] args) {
         assert name != null;
         assert args != null;
 
@@ -304,7 +308,7 @@ public class Env {
         for (int i = 0; i < args.length; ++i)
             values[i] = Value.fromJava(location, args[i]);
 
-        return (R) getFunction(location, name, values.length)
+        return (R) getFunction(location, Name.get(name), values.length)
                 .call(global, values)
                 .getValue();
     }

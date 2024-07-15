@@ -3,14 +3,15 @@ package io.scriptor.runtime;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import io.scriptor.Name;
+import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
-import io.scriptor.parser.SourceLocation;
 
 public class NativeFunction implements IFunction {
 
     public final SourceLocation location;
     public final String nativeName;
-    public final String name;
+    public final Name name;
     public final int argCount;
 
     public final Class<?> clazz;
@@ -20,7 +21,7 @@ public class NativeFunction implements IFunction {
     public NativeFunction(
             final SourceLocation location,
             final String nativeName,
-            final String name,
+            final Name name,
             final int argCount,
             final boolean hasVarArgs) {
         assert location != null;
@@ -68,7 +69,7 @@ public class NativeFunction implements IFunction {
     }
 
     @Override
-    public String name() {
+    public Name name() {
         return name;
     }
 

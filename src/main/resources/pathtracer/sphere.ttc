@@ -1,14 +1,15 @@
-def sphere(center, radius) = {
+:sphere
+def new(center, radius) = {
     type = 0,
     center = center,
     radius = radius
 }
 
-def sphere_hit(self, r, ray_tmin, ray_tmax, rec) = (
-    def oc = vec3_sub(self.center, r.origin)
-    def a = vec3_length_squared(r.direction)
-    def h = vec3_dot(r.direction, oc)
-    def c = vec3_length_squared(oc) - self.radius * self.radius
+def hit(self, r, ray_tmin, ray_tmax, rec) = (
+    def oc = vec3:sub(self.center, r.origin)
+    def a = vec3:length_squared(r.direction)
+    def h = vec3:dot(r.direction, oc)
+    def c = vec3:length_squared(oc) - self.radius * self.radius
 
     def discriminant = h * h - a * c
     if [discriminant < 0] 0
@@ -21,18 +22,19 @@ def sphere_hit(self, r, ray_tmin, ray_tmax, rec) = (
             if [root <= ray_tmin || ray_tmax <= root] 0
             else (
                 rec.t = root
-                rec.p = ray_at(r, rec.t)
-                def outward_normal = vec3_div1(vec3_sub(rec.p, self.center), self.radius)
-                set_face_normal(rec, r, outward_normal)
+                rec.p = ray:at(r, rec.t)
+                def outward_normal = vec3:div(vec3:sub(rec.p, self.center), self.radius)
+                hit_record:set_face_normal(rec, r, outward_normal)
                 1
             )
         )
         else (
             rec.t = root
-            rec.p = ray_at(r, rec.t)
-            def outward_normal = vec3_div1(vec3_sub(rec.p, self.center), self.radius)
-            set_face_normal(rec, r, outward_normal)
+            rec.p = ray:at(r, rec.t)
+            def outward_normal = vec3:div(vec3:sub(rec.p, self.center), self.radius)
+            hit_record:set_face_normal(rec, r, outward_normal)
             1
         )
     )
 )
+:sphere

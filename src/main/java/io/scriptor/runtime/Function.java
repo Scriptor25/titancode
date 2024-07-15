@@ -1,20 +1,21 @@
 package io.scriptor.runtime;
 
+import io.scriptor.Name;
+import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
 import io.scriptor.ast.Expression;
-import io.scriptor.parser.SourceLocation;
 
 public class Function implements IFunction {
 
     public final SourceLocation location;
-    public final String name;
+    public final Name name;
     public final String[] argNames;
     public final boolean hasVarArgs;
     public final Expression body;
 
     public Function(
             final SourceLocation location,
-            final String name,
+            final Name name,
             final String[] argNames,
             final boolean hasVarArgs,
             final Expression body) {
@@ -36,7 +37,7 @@ public class Function implements IFunction {
     }
 
     @Override
-    public String name() {
+    public Name name() {
         return name;
     }
 
@@ -77,7 +78,7 @@ public class Function implements IFunction {
 
         final var env = new Env(parent, varargs);
         for (int i = 0; i < argNames.length; ++i)
-            env.defineVariable(location, argNames[i], args[i]);
+            env.defineVariable(location, Name.get(argNames[i]), args[i]);
 
         return body.evaluate(env);
     }

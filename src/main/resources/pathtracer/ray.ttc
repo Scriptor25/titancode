@@ -1,10 +1,13 @@
-def ray() = {
+:ray
+def new() = {
     origin = vec3(),
     direction = vec3()
 }
-def ray(origin, direction) = {
+
+def new(origin, direction) = {
     origin = origin,
     direction = direction
 }
 
-def ray_at(self, t) = vec3_add(self.origin, vec3_1mul(t, self.direction))
+def at(self, t) = vec3:add(self.origin, vec3:nmul(t, self.direction))
+:ray

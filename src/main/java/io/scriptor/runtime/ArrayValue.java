@@ -2,8 +2,8 @@ package io.scriptor.runtime;
 
 import java.util.Arrays;
 
+import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
-import io.scriptor.parser.SourceLocation;
 
 public class ArrayValue extends Value {
 

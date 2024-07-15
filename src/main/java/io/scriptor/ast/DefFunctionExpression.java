@@ -1,6 +1,7 @@
 package io.scriptor.ast;
 
-import io.scriptor.parser.SourceLocation;
+import io.scriptor.Name;
+import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.Function;
 import io.scriptor.runtime.IFunction;
@@ -9,8 +10,8 @@ import io.scriptor.runtime.Value;
 
 public class DefFunctionExpression extends Expression {
 
-    public final String name;
     public final String nativeName;
+    public final Name name;
     public final String[] argNames;
     public final boolean hasVarArgs;
     public final Expression body;
@@ -20,7 +21,7 @@ public class DefFunctionExpression extends Expression {
     public DefFunctionExpression(
             final SourceLocation location,
             final String nativeName,
-            final String name,
+            final Name name,
             final String[] argNames,
             final boolean hasVarArgs,
             final Expression body) {
@@ -30,8 +31,8 @@ public class DefFunctionExpression extends Expression {
         assert argNames != null;
         assert nativeName != null || body != null;
 
-        this.name = name;
         this.nativeName = nativeName;
+        this.name = name;
         this.argNames = argNames;
         this.hasVarArgs = hasVarArgs;
         this.body = body;

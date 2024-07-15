@@ -2,7 +2,7 @@ package io.scriptor.ast;
 
 import java.util.Arrays;
 
-import io.scriptor.parser.SourceLocation;
+import io.scriptor.SourceLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.NumberValue;

@@ -2,7 +2,8 @@ package io.scriptor.ast;
 
 import java.util.Arrays;
 
-import io.scriptor.parser.SourceLocation;
+import io.scriptor.Name;
+import io.scriptor.SourceLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Env;
 import io.scriptor.runtime.NumberValue;
@@ -10,22 +11,22 @@ import io.scriptor.runtime.Value;
 
 public class DefVariableExpression extends Expression {
 
-    public final String name;
     public final String nativeName;
+    public final Name name;
     public final Expression size;
     public final Expression init;
 
     public DefVariableExpression(
             final SourceLocation location,
             final String nativeName,
-            final String name,
+            final Name name,
             final Expression init) {
         super(location);
 
         assert name != null;
 
-        this.name = name;
         this.nativeName = nativeName;
+        this.name = name;
         this.size = null;
         this.init = init;
     }
@@ -33,7 +34,7 @@ public class DefVariableExpression extends Expression {
     public DefVariableExpression(
             final SourceLocation location,
             final String nativeName,
-            final String name,
+            final Name name,
             final Expression size,
             final Expression init) {
         super(location);
@@ -41,8 +42,8 @@ public class DefVariableExpression extends Expression {
         assert name != null;
         assert size != null;
 
-        this.name = name;
         this.nativeName = nativeName;
+        this.name = name;
         this.size = size;
         this.init = init;
     }

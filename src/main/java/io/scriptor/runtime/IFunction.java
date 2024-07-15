@@ -1,12 +1,13 @@
 package io.scriptor.runtime;
 
-import io.scriptor.parser.SourceLocation;
+import io.scriptor.Name;
+import io.scriptor.SourceLocation;
 
 public interface IFunction {
 
     SourceLocation location();
 
-    String name();
+    Name name();
 
     int argCount();
 
