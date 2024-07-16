@@ -1,6 +1,7 @@
 include "color.ttc"
 include "hittable.ttc"
 include "interval.ttc"
+include "material.ttc"
 include "ray.ttc"
 include "vec3.ttc"
 
@@ -10,6 +11,7 @@ def new() = {
     aspect_ratio = 1,
     image_width = 100,
     samples_per_pixel = 10,
+    max_depth = 10,
 
     # private #
     image_height = 0,
@@ -52,15 +54,26 @@ def get_ray(self, i, j) = (
     ray:new(ray_origin, ray_direction)
 )
 
-def ray_color(self, r, world) = (
-    def rec = hit_record:new()
+def ray_color(self, r, depth, world)
 
-    if [hittable:hit(world, r, interval:new(0, infinity), rec)]
-        vec3:nmul(0.5, vec3:add(rec.normal, vec3:new(1, 1, 1)))
-    else (
-        def unit_direction = vec3:unit_vector(r.direction)
-        def a = 0.5 * (unit_direction[1] + 1)
-        vec3:add(vec3:nmul(1 - a, vec3:new(1, 1, 1)), vec3:nmul(a, vec3:new(0.5, 0.7, 1)))
+def ray_color(self, r, depth, world) = (
+    if [depth > 0] (
+        def rec = hit_record:new()
+
+        if [hittable:hit(world, r, interval:new(0.001, infinity), rec)] (
+            def scattered = ray:new()
+            def attenuation = vec3:new()
+            if [material:scatter(rec.mat, r, rec, attenuation, scattered)]
+                vec3:mul(attenuation, camera:ray_color(self, scattered, depth - 1, world))
+            else vec3:new(0, 0, 0)
+        )
+        else (
+            def unit_direction = vec3:unit_vector(r.direction)
+            def a = 0.5 * (unit_direction[1] + 1)
+            vec3:add(vec3:nmul(1 - a, vec3:new(1, 1, 1)), vec3:nmul(a, vec3:new(0.5, 0.7, 1)))
+        )
+    ) else (
+        vec3:new(0, 0, 0)
     )
 )
 
@@ -75,7 +88,7 @@ def render(self, world) = (
             def pixel_color = vec3:new(0, 0, 0)
             for [0, self.samples_per_pixel] (
                 def r = camera:get_ray(self, i, j)
-                vec3:adde(pixel_color, camera:ray_color(self, r, world))
+                vec3:adde(pixel_color, camera:ray_color(self, r, self.max_depth, world))
             )
             image:setPixel(image, i, j, color:int(vec3:nmul(self.pixel_samples_scale, pixel_color)))
         )

@@ -9,6 +9,20 @@ import io.scriptor.TitanException;
 
 public class NativeFunction implements IFunction {
 
+    private static boolean isForbidden(final Class<?> type) {
+        if (type == Double.class || type == double.class)
+            return false;
+        if (type == String.class)
+            return false;
+        if (type == Character.class || type == char.class)
+            return false;
+        if (type.isArray())
+            return false;
+        if (type == Object.class)
+            return false;
+        return true;
+    }
+
     public final SourceLocation location;
     public final String nativeName;
     public final Name name;
@@ -52,6 +66,7 @@ public class NativeFunction implements IFunction {
 
         final var opt = Arrays.stream(clazz.getMethods())
                 .filter(m -> m.getName().equals(methodName))
+                .filter(m -> !Arrays.stream(m.getParameterTypes()).anyMatch(NativeFunction::isForbidden))
                 .findFirst();
         if (!opt.isPresent())
             throw new TitanException(location, "no such method: %s", nativeName);

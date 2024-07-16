@@ -2,10 +2,11 @@ include "interval.ttc"
 include "hittable.ttc"
 
 :sphere
-def new(center, radius) = {
+def new(center, radius, mat) = {
     type = 0,
     center = center,
-    radius = radius
+    radius = radius,
+    mat = mat
 }
 
 def hit(self, r, ray_t, rec) = (
@@ -28,6 +29,7 @@ def hit(self, r, ray_t, rec) = (
                 rec.p = ray:at(r, rec.t)
                 def outward_normal = vec3:div(vec3:sub(rec.p, self.center), self.radius)
                 hit_record:set_face_normal(rec, r, outward_normal)
+                rec.mat = self.mat
                 1
             )
         )
@@ -36,6 +38,7 @@ def hit(self, r, ray_t, rec) = (
             rec.p = ray:at(r, rec.t)
             def outward_normal = vec3:div(vec3:sub(rec.p, self.center), self.radius)
             hit_record:set_face_normal(rec, r, outward_normal)
+            rec.mat = self.mat
             1
         )
     )

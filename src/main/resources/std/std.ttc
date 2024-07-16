@@ -14,6 +14,7 @@ def native("java.lang.Math.cos") cos(x)
 def native("java.lang.Math.floor") floor(x)
 def native("java.lang.Math.random") random()
 def native("java.lang.Math.sqrt") sqrt(x)
+def native("java.lang.Math.abs") abs(x)
 
 # TIME #
 def native("java.lang.System.currentTimeMillis") millis()
