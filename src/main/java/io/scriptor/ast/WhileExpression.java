@@ -2,13 +2,12 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class WhileExpression extends Expression {
 
-    public final Expression condition;
-    public final Expression expression;
+    private Expression condition;
+    private Expression expression;
 
     public WhileExpression(final SourceLocation location, final Expression condition, final Expression expression) {
         super(location);
@@ -31,14 +30,14 @@ public class WhileExpression extends Expression {
     }
 
     @Override
-    public Type getType() {
-        return expression.getType();
+    public Expression makeConstant() {
+        condition = condition.makeConstant();
+        expression = expression.makeConstant();
+        return super.makeConstant();
     }
 
     @Override
     public Value evaluate(final Environment env) {
-        assert env != null;
-
         Value result = null;
         while (true) {
             final var c = condition.evaluate(env);

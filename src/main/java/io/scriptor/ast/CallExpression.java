@@ -1,15 +1,15 @@
 package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
+import io.scriptor.TitanException;
 import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.FunctionValue;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class CallExpression extends Expression {
 
-    public final FunctionValue callee;
-    public final Expression[] args;
+    private final FunctionValue callee;
+    private final Expression[] args;
 
     public CallExpression(
             final SourceLocation location,
@@ -18,6 +18,7 @@ public class CallExpression extends Expression {
         super(location);
 
         assert callee != null;
+        assert callee instanceof IDExpression;
         assert args != null;
 
         final var name = ((IDExpression) callee).name;
@@ -40,8 +41,10 @@ public class CallExpression extends Expression {
     }
 
     @Override
-    public Type getType() {
-        return null; // TODO
+    public Expression makeConstant() {
+        for (int i = 0; i < args.length; ++i)
+            args[i] = args[i].makeConstant();
+        return super.makeConstant();
     }
 
     @Override
@@ -51,6 +54,9 @@ public class CallExpression extends Expression {
         final var args = new Value[this.args.length];
         for (int i = 0; i < args.length; ++i)
             args[i] = this.args[i].evaluate(env);
+
+        if (!callee.getValue().isComplete())
+            throw new TitanException(location, "cannot call incomplete function: %s", callee.getValue().name());
 
         return callee
                 .getValue()

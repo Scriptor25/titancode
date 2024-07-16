@@ -3,12 +3,11 @@ package io.scriptor.ast;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.StringValue;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class StringExpression extends Expression {
 
-    public final String value;
+    private final String value;
 
     public StringExpression(final SourceLocation location, final String value) {
         super(location);
@@ -28,11 +27,6 @@ public class StringExpression extends Expression {
     @Override
     public boolean isConstant() {
         return true;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.getString(location);
     }
 
     @Override

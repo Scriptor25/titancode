@@ -2,7 +2,6 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public abstract class Expression {
@@ -27,7 +26,9 @@ public abstract class Expression {
         return false;
     }
 
-    public abstract Type getType();
+    public Expression makeConstant() {
+        return ConstExpression.makeConst(this);
+    }
 
     public abstract Value evaluate(final Environment env);
 }

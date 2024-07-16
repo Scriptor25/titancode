@@ -7,15 +7,14 @@ import io.scriptor.SourceLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.NumberValue;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class DefVariableExpression extends Expression {
 
-    public final String nativeName;
-    public final Name name;
-    public final Expression size;
-    public final Expression init;
+    private final String nativeName;
+    private final Name name;
+    private Expression size;
+    private Expression init;
 
     public DefVariableExpression(
             final SourceLocation location,
@@ -25,6 +24,7 @@ public class DefVariableExpression extends Expression {
         super(location);
 
         assert name != null;
+        assert nativeName == null || init == null;
 
         this.nativeName = nativeName;
         this.name = name;
@@ -42,6 +42,7 @@ public class DefVariableExpression extends Expression {
 
         assert name != null;
         assert size != null;
+        assert nativeName == null || init == null;
 
         this.nativeName = nativeName;
         this.name = name;
@@ -51,16 +52,39 @@ public class DefVariableExpression extends Expression {
 
     @Override
     public String toString() {
+        final var builder = new StringBuilder()
+                .append("def ");
+
+        if (nativeName != null)
+            builder
+                    .append("native(\"")
+                    .append(nativeName)
+                    .append("\") ");
+
+        builder.append(name);
+
         if (size != null)
-            return String.format("def %s[%s] = %s", name, size, init);
-        return String.format("def %s = %s", name, init);
+            builder
+                    .append('[')
+                    .append(size)
+                    .append(']');
+
+        if (init == null)
+            return builder.toString();
+
+        return builder
+                .append(" = ")
+                .append(init)
+                .toString();
     }
 
     @Override
-    public Type getType() {
-        if (size == null)
-            return init.getType();
-        return Type.getArray(location);
+    public Expression makeConstant() {
+        if (size != null)
+            size = size.makeConstant();
+        if (init != null)
+            init = init.makeConstant();
+        return super.makeConstant();
     }
 
     @Override

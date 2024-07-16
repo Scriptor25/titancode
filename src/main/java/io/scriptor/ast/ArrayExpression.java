@@ -5,44 +5,41 @@ import java.util.Arrays;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class ArrayExpression extends Expression {
 
-    public final Expression[] values;
+    private final Expression[] entries;
 
-    public ArrayExpression(final SourceLocation location, final Expression[] values) {
+    public ArrayExpression(final SourceLocation location, final Expression[] entries) {
         super(location);
-
-        assert values != null;
-
-        this.values = values;
+        assert entries != null;
+        this.entries = entries;
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(values);
+        return Arrays.toString(entries);
     }
 
     @Override
     public boolean isConstant() {
         return !Arrays
-                .stream(values)
+                .stream(entries)
                 .anyMatch(value -> !value.isConstant());
     }
 
     @Override
-    public Type getType() {
-        return Type.getArray(location);
+    public Expression makeConstant() {
+        for (int i = 0; i < entries.length; ++i)
+            entries[i] = entries[i].makeConstant();
+        return super.makeConstant();
     }
 
     @Override
     public Value evaluate(final Environment env) {
-        assert env != null;
-
         return new ArrayValue(location, Arrays
-                .stream(values)
+                .stream(entries)
                 .map(value -> value.evaluate(env))
                 .toArray(Value[]::new));
     }

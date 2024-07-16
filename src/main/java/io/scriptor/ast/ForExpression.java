@@ -3,16 +3,15 @@ package io.scriptor.ast;
 import io.scriptor.Name;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class ForExpression extends Expression {
 
-    public final Expression from;
-    public final Expression to;
-    public final Expression step;
-    public final String id;
-    public final Expression expression;
+    private Expression from;
+    private Expression to;
+    private Expression step;
+    private final String id;
+    private Expression body;
 
     public ForExpression(
             final SourceLocation location,
@@ -20,18 +19,18 @@ public class ForExpression extends Expression {
             final Expression to,
             final Expression step,
             final String id,
-            final Expression expression) {
+            final Expression body) {
         super(location);
 
         assert from != null;
         assert to != null;
-        assert expression != null;
+        assert body != null;
 
         this.from = from;
         this.to = to;
         this.step = step;
         this.id = id;
-        this.expression = expression;
+        this.body = body;
     }
 
     @Override
@@ -42,33 +41,39 @@ public class ForExpression extends Expression {
                 to,
                 step == null ? "" : ", " + step.toString(),
                 id == null ? "" : " -> " + id,
-                expression);
+                body);
     }
 
     @Override
     public boolean isConstant() {
-        return from.isConstant() && to.isConstant() && (step == null || step.isConstant()) && expression.isConstant();
+        return from.isConstant()
+                && to.isConstant()
+                && (step == null || step.isConstant())
+                && body.isConstant();
     }
 
     @Override
-    public Type getType() {
-        return expression.getType();
+    public Expression makeConstant() {
+        from = from.makeConstant();
+        to = to.makeConstant();
+        if (step != null)
+            step = step.makeConstant();
+        body = body.makeConstant();
+        return super.makeConstant();
     }
 
     @Override
     public Value evaluate(final Environment env) {
-        assert env != null;
-
-        final var efrom = from.evaluate(env).getDouble();
-        final var eto = to.evaluate(env).getDouble();
-        final var estep = step == null ? 1.0 : step.evaluate(env).getDouble();
+        final var f = from.evaluate(env).getDouble();
+        final var t = to.evaluate(env).getDouble();
+        final var s = step == null ? 1.0 : step.evaluate(env).getDouble();
 
         Value result = null;
-        for (double i = efrom; i < eto; i += estep) {
+        for (double i = f; i < t; i += s) {
             final var env1 = new Environment(env);
             if (id != null)
                 env1.defineVariable(location, Name.get(id), Value.fromJava(location, i));
-            result = expression.evaluate(env1);
+            result = body.evaluate(env1);
         }
 
         return result;

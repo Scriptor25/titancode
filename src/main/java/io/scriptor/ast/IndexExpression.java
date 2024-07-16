@@ -2,43 +2,52 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class IndexExpression extends Expression {
 
-    public final Expression expression;
-    public final Expression index;
+    private Expression object;
+    private Expression index;
 
-    public IndexExpression(final SourceLocation location, final Expression expression, final Expression index) {
+    public IndexExpression(final SourceLocation location, final Expression object, final Expression index) {
         super(location);
 
-        assert expression != null;
+        assert object != null;
         assert index != null;
 
-        this.expression = expression;
+        this.object = object;
         this.index = index;
+    }
+
+    public Expression getObject() {
+        return object;
+    }
+
+    public Expression getIndex() {
+        return index;
     }
 
     @Override
     public String toString() {
-        return String.format("%s[%s]", expression, index);
+        return String.format("%s[%s]", object, index);
     }
 
     @Override
     public boolean isConstant() {
-        return expression.isConstant() && index.isConstant();
+        return object.isConstant() && index.isConstant();
     }
 
     @Override
-    public Type getType() {
-        return null; // TODO
+    public Expression makeConstant() {
+        object = object.makeConstant();
+        index = index.makeConstant();
+        return super.makeConstant();
     }
 
     @Override
     public Value evaluate(final Environment env) {
         final var eindex = index.evaluate(env);
-        final var value = expression.evaluate(env);
+        final var value = object.evaluate(env);
 
         final var i = eindex.getInt();
         return value.getAt(location, i);

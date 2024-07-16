@@ -1,13 +1,14 @@
 package io.scriptor.ast;
 
+import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class ConstExpression extends Expression {
 
     public static Expression makeConst(final Expression expression) {
-        if (expression.isConstant())
+        assert expression != null;
+        if (expression.isConstant() && !(expression instanceof ConstExpression))
             return new ConstExpression(expression);
         return expression;
     }
@@ -27,7 +28,8 @@ public class ConstExpression extends Expression {
 
     @Override
     public String toString() {
-        return expression.toString();
+        final var type = value == null ? "?" : value.getType(SourceLocation.UNKNOWN).name;
+        return String.format("[const (%s) %s]", type, value);
     }
 
     @Override
@@ -36,8 +38,8 @@ public class ConstExpression extends Expression {
     }
 
     @Override
-    public Type getType() {
-        return value.getType(location);
+    public Expression makeConstant() {
+        return this;
     }
 
     @Override

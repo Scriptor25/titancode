@@ -11,16 +11,15 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.function.Consumer;
 
 import io.scriptor.Name;
-import io.scriptor.Namespace;
 import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
 import io.scriptor.ast.ArrayExpression;
 import io.scriptor.ast.BinaryExpression;
 import io.scriptor.ast.CallExpression;
 import io.scriptor.ast.CharExpression;
-import io.scriptor.ast.ConstExpression;
 import io.scriptor.ast.DefFunctionExpression;
 import io.scriptor.ast.DefVariableExpression;
 import io.scriptor.ast.Expression;
@@ -37,19 +36,22 @@ import io.scriptor.ast.StringExpression;
 import io.scriptor.ast.UnaryExpression;
 import io.scriptor.ast.VarArgsExpression;
 import io.scriptor.ast.WhileExpression;
-import io.scriptor.runtime.Environment;
 
 public class Parser implements AutoCloseable, Iterable<Expression> {
 
-    public static void parseFile(final File file, final List<File> parsed, final Environment env) throws IOException {
+    public static void parseFile(
+            final File file,
+            final List<File> parsed,
+            final Consumer<Expression> callback)
+            throws IOException {
         if (parsed.contains(file))
             return;
         parsed.add(file);
 
-        final var parser = new Parser(file, parsed, env);
+        final var parser = new Parser(file, parsed, callback);
         try {
             for (final var expression : parser) {
-                expression.evaluate(env);
+                callback.accept(expression);
             }
         } catch (final NoSuchElementException e) {
         }
@@ -124,7 +126,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
 
     private final File file;
     private final List<File> parsed;
-    private final Environment env;
+    private final Consumer<Expression> callback;
 
     private final InputStream stream;
     private final Stack<String> namespace = new Stack<>();
@@ -135,10 +137,10 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
     private int column = 0;
     private Token token;
 
-    private Parser(final File file, final List<File> parsed, final Environment env) throws IOException {
+    private Parser(final File file, final List<File> parsed, final Consumer<Expression> callback) throws IOException {
         this.file = file;
         this.parsed = parsed;
-        this.env = env;
+        this.callback = callback;
 
         this.stream = new FileInputStream(file);
         next();
@@ -405,12 +407,6 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         return t;
     }
 
-    private Namespace getNamespace() {
-        if (inFunction)
-            return new Namespace();
-        return new Namespace(namespace.toArray(String[]::new));
-    }
-
     private void parseInclude() throws IOException {
         // include "<filename>"
 
@@ -420,7 +416,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         if (!file.isAbsolute())
             file = new File(this.file.getParentFile(), filename);
 
-        parseFile(file.getCanonicalFile(), parsed, env);
+        parseFile(file.getCanonicalFile(), parsed, callback);
     }
 
     private void parseNamespace() throws IOException {
@@ -440,12 +436,9 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         builder.append(expect(TokenType.ID).value());
 
         if (!at(":")) {
-            final Namespace namespace;
             if (inherit)
-                namespace = getNamespace();
-            else
-                namespace = new Namespace();
-            return Name.get(namespace, builder.toString());
+                return Name.get(namespace.toArray(String[]::new), builder.toString());
+            return Name.get(builder.toString());
         }
 
         while (at(":")) {
@@ -459,8 +452,7 @@ public class Parser implements AutoCloseable, Iterable<Expression> {
         if (at("def"))
             return parseDef();
 
-        final var expression = parseBinary();
-        return ConstExpression.makeConst(expression);
+        return parseBinary().makeConstant();
     }
 
     private Expression parseDef() throws IOException {

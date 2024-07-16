@@ -3,14 +3,36 @@ package io.scriptor.ast;
 import io.scriptor.SourceLocation;
 import io.scriptor.TitanException;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class BinaryExpression extends Expression {
 
-    public final String operator;
-    public final Expression lhs;
-    public final Expression rhs;
+    private static Value assign(
+            final SourceLocation location,
+            final Environment env,
+            final Expression dst,
+            final Value src) {
+        if (dst instanceof IDExpression e) {
+            assert env != null;
+            final var name = e.name;
+            final var variable = env.setVariable(location, name, src);
+            return variable.value;
+        }
+        if (dst instanceof IndexExpression e) {
+            final var index = e.getIndex().evaluate(env).getInt();
+            final var array = e.getObject().evaluate(env);
+            return array.setAt(index, src);
+        }
+        if (dst instanceof MemberExpression e) {
+            final var object = e.getObject().evaluate(env);
+            return object.putField(e.getMember(), src);
+        }
+        throw new TitanException(location, "cannot assign to '%s'", dst);
+    }
+
+    private final String operator;
+    private Expression lhs;
+    private Expression rhs;
 
     public BinaryExpression(
             final SourceLocation location,
@@ -39,54 +61,30 @@ public class BinaryExpression extends Expression {
     }
 
     @Override
-    public Type getType() {
-        return Environment.getBinaryOperator(location, operator, lhs.getType(), rhs.getType()).result();
+    public Expression makeConstant() {
+        lhs = lhs.makeConstant();
+        rhs = rhs.makeConstant();
+        return super.makeConstant();
     }
 
     @Override
     public Value evaluate(final Environment env) {
-        assert env != null;
-
         if (operator.equals("=")) {
             final var value = rhs.evaluate(env);
-            if (lhs instanceof IDExpression e) {
-                final var name = e.name;
-                final var variable = env.setVariable(location, name, value);
-                return variable.value;
-            }
-            if (lhs instanceof IndexExpression e) {
-                final var index = e.index.evaluate(env).getInt();
-                final var array = e.expression.evaluate(env);
-                return array.setAt(index, value);
-            }
-            if (lhs instanceof MemberExpression e) {
-                final var object = e.object.evaluate(env);
-                return object.putField(e.member, value);
-            }
-            throw new TitanException(location, "cannot assign to '%s'", lhs);
+            return assign(location, env, lhs, value);
         }
 
         final var left = lhs.evaluate(env);
         final var right = rhs.evaluate(env);
-        final var op = Environment.getBinaryOperator(location, operator, left.getType(location), right.getType(location));
+        final var op = Environment.getBinaryOperator(
+                location,
+                operator,
+                left.getType(location),
+                right.getType(location));
         final var value = op.operator().evaluate(left, right);
 
         if (op.reassign()) {
-            if (lhs instanceof IDExpression e) {
-                final var name = e.name;
-                final var variable = env.setVariable(location, name, value);
-                return variable.value;
-            }
-            if (lhs instanceof IndexExpression e) {
-                final var index = e.index.evaluate(env).getInt();
-                final var array = e.expression.evaluate(env);
-                return array.setAt(index, value);
-            }
-            if (lhs instanceof MemberExpression e) {
-                final var object = e.object.evaluate(env);
-                return object.putField(e.member, value);
-            }
-            throw new TitanException(location, "cannot assign to '%s'", lhs);
+            return assign(location, env, lhs, value);
         }
 
         return value;

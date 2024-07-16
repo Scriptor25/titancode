@@ -2,14 +2,13 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class IfExpression extends Expression {
 
-    public final Expression condition;
-    public final Expression branchTrue;
-    public final Expression branchFalse;
+    private Expression condition;
+    private Expression branchTrue;
+    private Expression branchFalse;
 
     public IfExpression(
             final SourceLocation location,
@@ -39,14 +38,16 @@ public class IfExpression extends Expression {
     }
 
     @Override
-    public Type getType() {
-        return null; // TODO
+    public Expression makeConstant() {
+        condition = condition.makeConstant();
+        branchTrue = branchTrue.makeConstant();
+        if (branchFalse != null)
+            branchFalse = branchFalse.makeConstant();
+        return super.makeConstant();
     }
 
     @Override
     public Value evaluate(final Environment env) {
-        assert env != null;
-
         final var c = condition.evaluate(env);
         if (c.getBoolean())
             return branchTrue.evaluate(env);

@@ -6,18 +6,17 @@ import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.Function;
 import io.scriptor.runtime.IFunction;
 import io.scriptor.runtime.NativeFunction;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class DefFunctionExpression extends Expression {
 
-    public final String nativeName;
-    public final Name name;
-    public final String[] argNames;
-    public final boolean hasVarArgs;
-    public final Expression body;
+    private final String nativeName;
+    private final Name name;
+    private final String[] argNames;
+    private final boolean hasVarArgs;
+    private final Expression body;
 
-    public final IFunction function;
+    private final IFunction function;
 
     public DefFunctionExpression(
             final SourceLocation location,
@@ -30,6 +29,7 @@ public class DefFunctionExpression extends Expression {
 
         assert name != null;
         assert argNames != null;
+        assert nativeName == null || body == null;
 
         this.nativeName = nativeName;
         this.name = name;
@@ -43,9 +43,19 @@ public class DefFunctionExpression extends Expression {
     }
 
     @Override
+    public boolean isConstant() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         final var builder = new StringBuilder()
-                .append("def ")
+                .append("def ");
+        if (nativeName != null)
+            builder.append("native(\"")
+                    .append(nativeName)
+                    .append("\") ");
+        builder
                 .append(name)
                 .append('(');
 
@@ -55,15 +65,21 @@ public class DefFunctionExpression extends Expression {
             builder.append(argNames[i]);
         }
 
+        if (hasVarArgs)
+            if (argNames.length == 0)
+                builder.append('?');
+            else
+                builder.append(", ?");
+
+        if (body == null)
+            return builder
+                    .append(')')
+                    .toString();
+
         return builder
                 .append(") = ")
                 .append(body)
                 .toString();
-    }
-
-    @Override
-    public Type getType() {
-        return Type.getFunction(location);
     }
 
     @Override

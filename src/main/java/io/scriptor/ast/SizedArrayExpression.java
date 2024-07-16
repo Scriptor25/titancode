@@ -6,32 +6,35 @@ import io.scriptor.SourceLocation;
 import io.scriptor.runtime.ArrayValue;
 import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.NumberValue;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class SizedArrayExpression extends Expression {
 
-    public final Expression size;
-    public final Expression init;
+    private Expression size;
+    private Expression init;
 
     public SizedArrayExpression(final SourceLocation location, final Expression size, final Expression init) {
         super(location);
-
         assert size != null;
-
         this.size = size;
         this.init = init;
     }
 
     @Override
-    public Type getType() {
-        return Type.getArray(location);
+    public boolean isConstant() {
+        return size.isConstant() && init.isConstant();
+    }
+
+    @Override
+    public Expression makeConstant() {
+        size = size.makeConstant();
+        if (init != null)
+            init = init.makeConstant();
+        return super.makeConstant();
     }
 
     @Override
     public Value evaluate(final Environment env) {
-        assert env != null;
-
         final var n = size.evaluate(env).getInt();
         final var values = new Value[n];
         if (init == null)

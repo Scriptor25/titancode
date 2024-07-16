@@ -6,12 +6,11 @@ import java.util.Map;
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
 import io.scriptor.runtime.ObjectValue;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class ObjectExpression extends Expression {
 
-    public final Map<String, Expression> fields;
+    private final Map<String, Expression> fields;
 
     public ObjectExpression(final SourceLocation location, final Map<String, Expression> fields) {
         super(location);
@@ -39,7 +38,7 @@ public class ObjectExpression extends Expression {
                     .append('\n')
                     .append(spaces)
                     .append(field.getKey())
-                    .append('=')
+                    .append(" = ")
                     .append(field.getValue());
         }
 
@@ -54,8 +53,18 @@ public class ObjectExpression extends Expression {
     }
 
     @Override
-    public Type getType() {
-        return Type.getObject(location);
+    public boolean isConstant() {
+        return !fields
+                .values()
+                .stream()
+                .anyMatch(field -> !field.isConstant());
+    }
+
+    @Override
+    public Expression makeConstant() {
+        for (final var entry : fields.entrySet())
+            entry.setValue(entry.getValue().makeConstant());
+        return super.makeConstant();
     }
 
     @Override

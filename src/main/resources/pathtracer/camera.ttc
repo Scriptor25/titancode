@@ -67,7 +67,7 @@ def ray_color(self, r, world) = (
 def render(self, world) = (
     camera:initialize(self)
 
-    def image = imgCreate(self.image_width, self.image_height)
+    def image = image:new(self.image_width, self.image_height)
 
     for [0, self.image_height] -> j (
         printf("\rScanlines remaining: %5.0f", self.image_height - j)
@@ -77,12 +77,12 @@ def render(self, world) = (
                 def r = camera:get_ray(self, i, j)
                 vec3:adde(pixel_color, camera:ray_color(self, r, world))
             )
-            imgSetPixel(image, i, j, color:int(vec3:nmul(self.pixel_samples_scale, pixel_color)))
+            image:setPixel(image, i, j, color:int(vec3:nmul(self.pixel_samples_scale, pixel_color)))
         )
     )
 
     printf("\rWriting image...          ")
-    imgWrite("out.ppm", image)
+    image:write(image, "out.ppm")
     printf("\rDone.           %n")
 )
 :camera

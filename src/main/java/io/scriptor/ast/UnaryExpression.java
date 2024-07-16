@@ -2,13 +2,12 @@ package io.scriptor.ast;
 
 import io.scriptor.SourceLocation;
 import io.scriptor.runtime.Environment;
-import io.scriptor.runtime.Type;
 import io.scriptor.runtime.Value;
 
 public class UnaryExpression extends Expression {
 
-    public final String operator;
-    public final Expression expression;
+    private final String operator;
+    private Expression expression;
 
     public UnaryExpression(final SourceLocation location, final String operator, final Expression expression) {
         super(location);
@@ -31,8 +30,9 @@ public class UnaryExpression extends Expression {
     }
 
     @Override
-    public Type getType() {
-        return Environment.getUnaryOperator(location, operator, expression.getType()).result();
+    public Expression makeConstant() {
+        expression = expression.makeConstant();
+        return super.makeConstant();
     }
 
     @Override
